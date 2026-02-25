@@ -194,7 +194,6 @@ export default {
       this.errorMessage = ''
       this.loading = true
       try {
-        // ✅ FIXED: correct backend URL with port and endpoint
         const response = await axios.post('http://localhost:8000/login', this.login)
         const { user, role } = response.data
         localStorage.setItem('user', JSON.stringify(user))

@@ -8,7 +8,7 @@ const ExcelJS = require('exceljs')
 const bcrypt = require('bcryptjs') 
 
 const app = express()
-app.use(cors())
+app.use(cors())                // ✅ Allow all origins (mobile app + admin Vue)
 app.use(express.json())
 
 const uploadsDir = path.join(__dirname, 'uploads')
@@ -36,48 +36,21 @@ const uploadImport = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 })
 
-// ✅ Hostinger DB credentials
-const dbConfig = {
-  host: '153.92.15.57',
-  user: 'u211334565_admin',
-  password: 'careQueue2026',
-  database: 'u211334565_carequeue',
-  port: 3306
-}
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'carequeue'
+})
 
-let db
-let tablesCreated = false
-
-function handleDisconnect() {
-  db = mysql.createConnection(dbConfig)
-
-  db.connect(err => {
-    if (err) {
-      console.error('❌ MySQL connection failed:', err.message)
-      setTimeout(handleDisconnect, 5000) // retry after 5 seconds
-      return
-    }
-    console.log('✅ Connected to MySQL')
-    if (!tablesCreated) {
-      tablesCreated = true
-      createTables()
-    }
-  })
-
-  db.on('error', err => {
-    console.error('DB error:', err.message)
-    if (err.code === 'PROTOCOL_CONNECTION_LOST' ||
-        err.code === 'ECONNRESET' ||
-        err.code === 'ECONNREFUSED') {
-      console.log('🔄 Reconnecting to MySQL...')
-      handleDisconnect()
-    } else {
-      throw err
-    }
-  })
-}
-
-handleDisconnect()
+db.connect(err => {
+  if (err) {
+    console.error('❌ MySQL connection failed:', err.message)
+    process.exit(1)
+  }
+  console.log('✅ Connected to MySQL')
+  createTables()
+})
 
 function createTables() {
   const sql1 = `
@@ -935,6 +908,7 @@ app.post('/appointments', (req, res) => {
         return res.status(500).json({ message: 'Failed to create appointment.' })
       }
 
+      // Auto-create patient record for new patients
       if (patient_type === 'new') {
         generatePatientId((err2, pid) => {
           if (!err2) {
