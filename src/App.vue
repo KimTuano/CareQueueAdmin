@@ -195,7 +195,7 @@ export default {
       this.loading = true
       try {
         // ✅ FIXED: correct backend URL with port and endpoint
-        const response = await axios.post('https://www.carequeue-admin.com:8000/login', this.login)
+        const response = await axios.post('http://localhost:8000/login', this.login)
         const { user, role } = response.data
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', role)
