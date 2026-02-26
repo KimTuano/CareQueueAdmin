@@ -37,7 +37,7 @@ const uploadImport = multer({
 })
 
 const db = mysql.createConnection({
-  host: 'localhost',
+  host: '46.202.138.184',
   user: 'u211334565_admin',
   password: 'Carequeue2026',
   database: 'u211334565_carequeue'
