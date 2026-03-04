@@ -117,14 +117,61 @@
         </div>
         <div class="topbar-right">
           <div class="topbar-btn notif-wrapper" @click="notifOpen = !notifOpen" v-click-outside="() => notifOpen = false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-            <span class="notif-badge">3</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span class="notif-badge" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+
             <div class="dropdown notif-dropdown" v-show="notifOpen" @click.stop>
-              <div class="dropdown-header"><span>Notifications</span><a href="#" class="mark-read">Mark all read</a></div>
-              <div class="notif-item unread"><div class="notif-dot"></div><div><p class="notif-title">New appointment booked</p><p class="notif-time">2 minutes ago</p></div></div>
-              <div class="notif-item unread"><div class="notif-dot"></div><div><p class="notif-title">Dr. Yambao is now available</p><p class="notif-time">15 minutes ago</p></div></div>
-              <div class="notif-item unread"><div class="notif-dot"></div><div><p class="notif-title">Patient queue updated</p><p class="notif-time">1 hour ago</p></div></div>
-              <div class="notif-item"><div class="notif-dot read"></div><div><p class="notif-title">Medical record updated</p><p class="notif-time">Yesterday</p></div></div>
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <button class="mark-read" @click.stop="markAllRead" :disabled="unreadCount === 0">Mark all read</button>
+              </div>
+
+              <div v-if="notifLoading" class="notif-loading-row">
+                <div class="notif-spinner"></div> Loading...
+              </div>
+
+              <div v-else-if="notifications.length === 0" class="notif-empty-row">
+                No notifications
+              </div>
+
+              <template v-else>
+                <div
+                  v-for="n in notifications"
+                  :key="n.id"
+                  class="notif-item"
+                  :class="{ unread: !n.is_read }"
+                  @click.stop="handleNotifClick(n)"
+                >
+                  <div class="notif-dot" :class="{ read: n.is_read }"></div>
+                  <div>
+                    <p class="notif-title">{{ n.title }}</p>
+                    <p class="notif-time">{{ n.body }}</p>
+                    <p class="notif-time" style="color:#b0c4c4; margin-top:2px">{{ formatNotifTime(n.created_at) }}</p>
+                  </div>
+                </div>
+              </template>
+
+              <div v-if="isAdmin" class="notif-compose-wrap">
+                <button class="notif-compose-btn" @click.stop="notifCompose = !notifCompose">
+                  + Send to Doctor
+                </button>
+                <div v-if="notifCompose" class="notif-compose-box" @click.stop>
+                  <select v-model="notifForm.target" class="notif-compose-input">
+                    <option value="">All Doctors</option>
+                    <option v-for="d in doctors" :key="d.id" :value="`Dr. ${d.first_name} ${d.last_name}`">
+                      Dr. {{ d.first_name }} {{ d.last_name }}
+                    </option>
+                  </select>
+                  <input v-model="notifForm.title" class="notif-compose-input" placeholder="Title" />
+                  <textarea v-model="notifForm.body" class="notif-compose-textarea" placeholder="Message..." rows="2"></textarea>
+                  <div style="display:flex;gap:6px;margin-top:6px">
+                    <button class="notif-cancel-btn" @click.stop="notifCompose = false">Cancel</button>
+                    <button class="notif-send-btn" @click.stop="sendNotif" :disabled="!notifForm.title || !notifForm.body">Send</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div class="account-wrapper" @click="accountOpen = !accountOpen" v-click-outside="() => accountOpen = false">
@@ -164,6 +211,35 @@
                 <input type="text" v-model="searchName" placeholder="Search Name" class="search-input" />
                 <button class="search-btn"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
               </div>
+
+              <!-- ✅ NEW: Hospital Filter Dropdown -->
+              <div class="filter-select-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="filter-select-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <select v-model="filterHospital" class="filter-select">
+                  <option value="">All Hospitals</option>
+                  <option v-for="h in hospitalList" :key="h.id" :value="h.name">{{ h.name }}</option>
+                </select>
+              </div>
+
+              <!-- ✅ NEW: No Account Filter Toggle Button -->
+              <button
+                class="btn-filter-no-account"
+                :class="{ active: filterNoAccount }"
+                @click="filterNoAccount = !filterNoAccount"
+                :title="filterNoAccount ? 'Showing only doctors without accounts' : 'Show only doctors without accounts'"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                </svg>
+                No Account
+                <span v-if="filterNoAccount" class="filter-active-dot"></span>
+              </button>
+
+              <!-- ✅ Active filter indicator -->
+              <button v-if="filterNoAccount || filterHospital" class="btn-clear-filters" @click="clearFilters" title="Clear all filters">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Clear
+              </button>
             </div>
             <div class="toolbar-right">
               <button class="btn-add" @click="showAddModal = true">
@@ -176,6 +252,23 @@
               </button>
               <input type="file" ref="fileInput" accept=".csv,.xlsx,.xls" style="display:none" @change="handleImport" />
             </div>
+          </div>
+
+          <!-- ✅ Active filter summary bar -->
+          <div v-if="filterNoAccount || filterHospital" class="filter-summary-bar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+            <span>Filtering:</span>
+            <span v-if="filterNoAccount" class="filter-chip no-acct-chip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+              No Account
+              <button @click="filterNoAccount = false">✕</button>
+            </span>
+            <span v-if="filterHospital" class="filter-chip hosp-chip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
+              {{ filterHospital }}
+              <button @click="filterHospital = ''">✕</button>
+            </span>
+            <span class="filter-result-count">{{ searchedDoctors.length }} result{{ searchedDoctors.length !== 1 ? 's' : '' }}</span>
           </div>
 
           <div v-if="loading" class="loading-state">
@@ -200,7 +293,8 @@
                 <td colspan="7" class="empty-row">
                   <div class="empty-state">
                     <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-                    <p>No doctors found. Click <strong>ADD</strong> to get started.</p>
+                    <p v-if="filterNoAccount || filterHospital">No doctors match the current filters.</p>
+                    <p v-else>No doctors found. Click <strong>ADD</strong> to get started.</p>
                   </div>
                 </td>
               </tr>
@@ -252,8 +346,6 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
-          <!-- ══ END PAGINATION ══ -->
-
         </div>
       </main>
     </div>
@@ -315,7 +407,19 @@
                 <button type="button" class="btn-add-option" @click="openAddHospital" title="Add new hospital">+</button>
               </div>
             </div>
-            <div class="field-group"><label>Office / Room <span class="required">*</span></label><input type="text" v-model="newDoctor.office" placeholder="e.g. RVJ 101" /></div>
+
+            <!-- ✅ UPDATED: Office / Room now uses dropdown + add button -->
+            <div class="field-group">
+              <label>Office / Room <span class="required">*</span></label>
+              <div class="select-with-add">
+                <select v-model="newDoctor.office" class="select-flex">
+                  <option value="">Select Office / Room</option>
+                  <option v-for="o in officeList" :key="o.id" :value="o.name">{{ o.name }}</option>
+                </select>
+                <button type="button" class="btn-add-option" @click="openAddOffice" title="Add new office/room">+</button>
+              </div>
+            </div>
+
             <div class="field-group"><label>License Number</label><input type="text" v-model="newDoctor.license_number" placeholder="PRC License No." /></div>
             <div class="field-group"><label>Years of Experience</label><input type="number" v-model="newDoctor.years_experience" placeholder="e.g. 10" min="0" /></div>
             <div class="field-group"><label>Medical School / University</label><input type="text" v-model="newDoctor.medical_school" placeholder="e.g. University of Santo Tomas" /></div>
@@ -360,6 +464,29 @@
         <div class="modal-footer">
           <button class="btn-cancel" @click="showAddHospModal = false">Cancel</button>
           <button class="btn-add-confirm" @click="saveHospital" :disabled="savingHosp">{{ savingHosp ? 'Saving...' : 'Add' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         ✅ NEW: ADD OFFICE / ROOM MODAL
+    ══════════════════════════════════════════ -->
+    <div class="modal-overlay" v-if="showAddOfficeModal" @click.self="showAddOfficeModal = false">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h3>Add Office / Room</h3>
+          <button class="modal-close" @click="showAddOfficeModal = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label>Office / Room Name <span class="required">*</span></label>
+            <input type="text" v-model="newOffice" placeholder="e.g. RVJ 301" @keyup.enter="saveOffice" />
+          </div>
+          <p v-if="addOfficeError" class="error-msg">{{ addOfficeError }}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showAddOfficeModal = false">Cancel</button>
+          <button class="btn-add-confirm" @click="saveOffice" :disabled="savingOffice">{{ savingOffice ? 'Saving...' : 'Add' }}</button>
         </div>
       </div>
     </div>
@@ -598,6 +725,11 @@ export default {
     return {
       sidebarCollapsed: false,
       notifOpen: false,
+      notifLoading: false,
+      notifications: [],
+      unreadCount: 0,
+      notifCompose: false,
+      notifForm: { target: '', title: '', body: '' },
       accountOpen: false,
       appointmentsOpen: false,
       searchId: '',
@@ -606,6 +738,10 @@ export default {
       perPage: 10,
       loading: false,
       saving: false,
+
+      // ✅ NEW: Filter state
+      filterNoAccount: false,
+      filterHospital: '',
 
       // Toasts
       showSuccess: false,
@@ -631,6 +767,12 @@ export default {
       newHospital: '',
       addHospError: '',
       savingHosp: false,
+
+      // ✅ NEW: Add Office/Room mini-modal
+      showAddOfficeModal: false,
+      newOffice: '',
+      addOfficeError: '',
+      savingOffice: false,
 
       // View Modal
       showViewModal: false,
@@ -660,6 +802,7 @@ export default {
       doctors: [],
       hospitalList: [],
       specializationList: [],
+      officeList: [],    // ✅ NEW
       currentUser: JSON.parse(localStorage.getItem('user')) || { name: 'Admin', email: '' },
       livePerms: JSON.parse(localStorage.getItem('doctorPermissions') || '{}'),
     }
@@ -668,11 +811,13 @@ export default {
     isAdmin() { return localStorage.getItem('role') === 'admin' },
     canAccess() { return this.isAdmin || this.doctorCan('book_appointment') },
 
-    // Applies search filters; pagination is handled separately
     searchedDoctors() {
       let list = this.doctors
-      if (this.searchName) list = list.filter(d => `${d.first_name} ${d.last_name}`.toLowerCase().includes(this.searchName.toLowerCase()))
-      if (this.searchId)   list = list.filter(d => (d.doctor_id || '').toString().toLowerCase().includes(this.searchId.toLowerCase()))
+      if (this.searchName)    list = list.filter(d => `${d.first_name} ${d.last_name}`.toLowerCase().includes(this.searchName.toLowerCase()))
+      if (this.searchId)      list = list.filter(d => (d.doctor_id || '').toString().toLowerCase().includes(this.searchId.toLowerCase()))
+      // ✅ NEW filters
+      if (this.filterNoAccount) list = list.filter(d => !d.has_account)
+      if (this.filterHospital)  list = list.filter(d => d.hospital === this.filterHospital)
       return list
     },
 
@@ -685,38 +830,102 @@ export default {
       return Math.max(1, Math.ceil(this.searchedDoctors.length / this.perPage))
     },
 
-    // ══ SMART PAGINATION: shows at most 7 items (numbers + ellipses) ══
     paginationItems() {
       const total   = this.totalPages
       const current = this.currentPage
-      const delta   = 2 // pages to show on each side of current
+      const delta   = 2
       const items   = []
-
       if (total <= 7) {
-        // If total pages is small, just show all
         for (let i = 1; i <= total; i++) items.push(i)
         return items
       }
-
       const rangeStart = Math.max(2, current - delta)
       const rangeEnd   = Math.min(total - 1, current + delta)
-
       items.push(1)
       if (rangeStart > 2) items.push('...')
       for (let i = rangeStart; i <= rangeEnd; i++) items.push(i)
       if (rangeEnd < total - 1) items.push('...')
       items.push(total)
-
       return items
     }
   },
   watch: {
-    // Reset to page 1 whenever search changes
-    searchName() { this.currentPage = 1 },
-    searchId()   { this.currentPage = 1 }
+    searchName()      { this.currentPage = 1 },
+    searchId()        { this.currentPage = 1 },
+    filterNoAccount() { this.currentPage = 1 },
+    filterHospital()  { this.currentPage = 1 },
   },
   methods: {
+
+    async fetchNotifications() {
+      this.notifLoading = true
+      try {
+        const role = localStorage.getItem('role')
+        const user = JSON.parse(localStorage.getItem('user')) || {}
+        let url = `http://localhost:8000/notifications?role=${role}`
+        if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
+        const res = await fetch(url)
+        const data = await res.json()
+        this.notifications = data.notifications || []
+        this.unreadCount   = data.unreadCount   || 0
+      } catch (err) {
+        console.error('Notifications error:', err)
+      } finally {
+        this.notifLoading = false
+      }
+    },
+
+    async markAllRead() {
+      const role = localStorage.getItem('role')
+      const user = JSON.parse(localStorage.getItem('user')) || {}
+      await fetch('http://localhost:8000/notifications/mark-read', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, doctor: user.name })
+      }).catch(() => {})
+      this.notifications = this.notifications.map(n => ({ ...n, is_read: 1 }))
+      this.unreadCount = 0
+    },
+
+    handleNotifClick(n) {
+      n.is_read = 1
+      this.unreadCount = this.notifications.filter(x => !x.is_read).length
+      if (n.link) { this.$router.push(n.link); this.notifOpen = false }
+    },
+
+    async sendNotif() {
+      if (!this.notifForm.title || !this.notifForm.body) return
+      await fetch('http://localhost:8000/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: this.notifForm.target ? 'doctor' : 'both',
+          target_doctor: this.notifForm.target || null,
+          title: this.notifForm.title,
+          body: this.notifForm.body
+        })
+      }).catch(() => {})
+      this.notifForm = { target: '', title: '', body: '' }
+      this.notifCompose = false
+      await this.fetchNotifications()
+    },
+
+    formatNotifTime(dateStr) {
+      if (!dateStr) return ''
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+      if (diff < 60)    return 'just now'
+      if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    },
+
     doctorCan(key) { return !!this.livePerms[key] },
+
+    // ✅ NEW: Clear all filters
+    clearFilters() {
+      this.filterNoAccount = false
+      this.filterHospital  = ''
+    },
 
     freshDoctor() {
       return {
@@ -752,7 +961,7 @@ export default {
       if (!this.newDoctor.mobile.trim())     { this.addError = 'Mobile number is required.'; return }
       if (!this.newDoctor.specialization)    { this.addError = 'Specialization is required.'; return }
       if (!this.newDoctor.hospital)          { this.addError = 'Hospital/Clinic is required.'; return }
-      if (!this.newDoctor.office.trim())     { this.addError = 'Office/Room is required.'; return }
+      if (!this.newDoctor.office)            { this.addError = 'Office/Room is required.'; return }
       this.saving = true
       try {
         const formData = new FormData()
@@ -855,6 +1064,31 @@ export default {
       finally { this.savingHosp = false }
     },
 
+    // ✅ NEW: Office/Room methods
+    openAddOffice() { this.newOffice = ''; this.addOfficeError = ''; this.showAddOfficeModal = true },
+    async saveOffice() {
+      if (!this.newOffice.trim()) { this.addOfficeError = 'Office/Room name is required.'; return }
+      this.savingOffice = true
+      try {
+        const res = await fetch('http://localhost:8000/offices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: this.newOffice.trim() })
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message || 'Failed.')
+        this.officeList.push(data.office)
+        this.newDoctor.office = data.office.name
+        this.showAddOfficeModal = false
+      } catch (err) { this.addOfficeError = err.message }
+      finally { this.savingOffice = false }
+    },
+
+    async fetchOffices() {
+      try { this.officeList = await (await fetch('http://localhost:8000/offices')).json() }
+      catch (err) { console.error('Failed to fetch offices:', err) }
+    },
+
     viewDoctor(doctor) { this.selectedDoctor = doctor; this.showViewModal = true },
 
     triggerImport() { this.importFile = null; this.importError = ''; this.showImportModal = true },
@@ -925,10 +1159,17 @@ export default {
     goTo(page) { this.accountOpen = false; if (page === 'edit-account') this.$router.push('/edit-profile') },
     handleLogout() { localStorage.removeItem('user'); this.$router.push('/') }
   },
+  beforeUnmount() {
+    clearInterval(this._notifPoll)
+  },
+
   mounted() {
     this.fetchDoctors()
     this.fetchHospitals()
     this.fetchSpecializations()
+    this.fetchOffices()   // ✅ NEW
+    this.fetchNotifications()
+    this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   }
 }
 </script>
@@ -1016,19 +1257,41 @@ export default {
 .notif-item:hover { background: #f8fafc; }
 .notif-item.unread { background: #f0fafa; }
 .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #3aa6a6; margin-top: 5px; flex-shrink: 0; }
+.notif-dot.read { background: #cbd5e1; }
 .notif-title { font-size: 13px; color: #1e293b; font-weight: 500; }
-.notif-time  { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.notif-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.notif-loading-row { display:flex; align-items:center; gap:8px; padding:16px; color:#94a3b8; font-size:13px; justify-content:center; }
+.notif-spinner { width:16px; height:16px; border:2px solid #e2e8f0; border-top-color:#3aa6a6; border-radius:50%; animation:spin 0.7s linear infinite; }
+.notif-empty-row { padding:20px; text-align:center; color:#94a3b8; font-size:13px; }
+.mark-read { font-size:11px; color:#3aa6a6; background:none; border:none; cursor:pointer; font-weight:500; padding:0; }
+.mark-read:disabled { opacity:0.4; cursor:default; }
+.notif-compose-wrap { border-top:1px solid #f1f5f9; padding:10px 14px; }
+.notif-compose-btn { width:100%; padding:7px; background:#f0fafa; border:1.5px dashed #3aa6a6; border-radius:8px; color:#0f766e; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+.notif-compose-btn:hover { background:#ccfbf1; }
+.notif-compose-box { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.notif-compose-input { width:100%; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#475569; font-family:inherit; outline:none; }
+.notif-compose-input:focus { border-color:#3aa6a6; }
+.notif-compose-textarea { width:100%; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#475569; font-family:inherit; outline:none; resize:none; }
+.notif-compose-textarea:focus { border-color:#3aa6a6; }
+.notif-cancel-btn { flex:1; padding:6px; border:1.5px solid #e2e8f0; background:white; border-radius:7px; font-size:12px; font-weight:600; color:#64748b; cursor:pointer; font-family:inherit; }
+.notif-send-btn { flex:1; padding:6px; background:#3aa6a6; border:none; border-radius:7px; font-size:12px; font-weight:600; color:white; cursor:pointer; font-family:inherit; }
+.notif-send-btn:disabled { opacity:0.5; cursor:not-allowed; }
 .account-wrapper { position: relative; cursor: pointer; }
-.account-avatar { width: 36px; height: 36px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; }
+.account-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; color: white; transition: background 0.2s; }
+.account-wrapper:hover .account-avatar { background: rgba(255,255,255,0.35); }
 .account-dropdown { width: 220px; }
 .account-info { flex-direction: column; align-items: flex-start; gap: 2px; }
-.account-name  { font-size: 13px; font-weight: 600; color: #1e293b; }
+.account-name { font-size: 13px; font-weight: 600; color: #1e293b; }
 .account-email { font-size: 11px; color: #94a3b8; }
 .dropdown-divider { border: none; border-top: 1px solid #f1f5f9; }
 .dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 16px; background: none; border: none; text-align: left; font-size: 13px; color: #475569; cursor: pointer; font-family: inherit; transition: background 0.15s; }
 .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
 .dropdown-item.logout { color: #ef4444; }
 .dropdown-item.logout:hover { background: #fff5f5; }
+.role-pill { margin-top: 4px; display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
+.role-pill.admin  { background: #dbeafe; color: #1d4ed8; }
+.role-pill.doctor { background: #d1fae5; color: #065f46; }
+.role-tag { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #3aa6a6; font-size: 12px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto; }
 
 /* ── CONTENT ── */
 .content { padding: 28px; flex: 1; }
@@ -1036,13 +1299,64 @@ export default {
 .breadcrumb { font-size: 12px; color: #94a3b8; margin-top: 2px; }
 .page-header { margin-bottom: 20px; }
 .table-card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
-.toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
-.toolbar-left  { display: flex; gap: 12px; flex-wrap: wrap; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.toolbar-left  { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .toolbar-right { display: flex; gap: 10px; }
 .search-box { display: flex; align-items: center; border: 1.5px solid #e2e8f0; border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
 .search-box:focus-within { border-color: #3aa6a6; }
-.search-input { padding: 8px 12px; border: none; outline: none; font-size: 13px; color: #475569; font-family: inherit; width: 160px; }
+.search-input { padding: 8px 12px; border: none; outline: none; font-size: 13px; color: #475569; font-family: inherit; width: 150px; }
 .search-btn { padding: 8px 12px; background: #3aa6a6; border: none; cursor: pointer; color: white; display: flex; align-items: center; }
+
+/* ✅ NEW: Hospital filter dropdown */
+.filter-select-wrap {
+  display: flex; align-items: center; gap: 6px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 0 10px 0 8px;
+  background: white; transition: border-color 0.2s; height: 36px;
+}
+.filter-select-wrap:focus-within { border-color: #3aa6a6; }
+.filter-select-icon { color: #94a3b8; flex-shrink: 0; }
+.filter-select {
+  border: none; outline: none; font-size: 12.5px; color: #475569;
+  font-family: inherit; background: transparent; cursor: pointer; min-width: 130px;
+}
+
+/* ✅ NEW: No Account filter button */
+.btn-filter-no-account {
+  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+  background: white; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 12.5px; font-weight: 600; color: #64748b; cursor: pointer;
+  font-family: inherit; transition: all 0.2s; position: relative; height: 36px;
+}
+.btn-filter-no-account:hover { border-color: #f59e0b; color: #b45309; background: #fffbeb; }
+.btn-filter-no-account.active { border-color: #f59e0b; color: #92400e; background: #fef3c7; }
+.filter-active-dot { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; position: absolute; top: 5px; right: 5px; }
+
+/* ✅ NEW: Clear filters button */
+.btn-clear-filters {
+  display: flex; align-items: center; gap: 5px; padding: 7px 12px;
+  background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 8px;
+  font-size: 12px; font-weight: 600; color: #dc2626; cursor: pointer;
+  font-family: inherit; transition: all 0.2s; height: 36px;
+}
+.btn-clear-filters:hover { background: #fee2e2; }
+
+/* ✅ NEW: Filter summary bar */
+.filter-summary-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0;
+  border-radius: 8px; margin-bottom: 16px; font-size: 12.5px; color: #64748b;
+}
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px;
+  border-radius: 20px; font-size: 11.5px; font-weight: 600;
+}
+.filter-chip button { background: none; border: none; cursor: pointer; font-size: 11px; margin-left: 4px; line-height: 1; padding: 0; }
+.no-acct-chip { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.no-acct-chip button { color: #b45309; }
+.hosp-chip { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.hosp-chip button { color: #1d4ed8; }
+.filter-result-count { margin-left: auto; font-size: 12px; font-weight: 600; color: #3aa6a6; }
+
 .btn-add, .btn-import { display: flex; align-items: center; gap: 8px; padding: 10px 24px; background: #3aa6a6; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.2s; letter-spacing: 0.5px; }
 .btn-add:hover, .btn-import:hover { background: #2e8b8b; }
 .loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px; color: #94a3b8; }
@@ -1074,47 +1388,22 @@ export default {
 
 /* ══ SMART PAGINATION ══ */
 .pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
-  flex-wrap: nowrap;
+  display: flex; justify-content: center; align-items: center;
+  gap: 4px; margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid #f1f5f9; flex-wrap: nowrap;
 }
 .page-btn {
-  min-width: 30px;
-  height: 30px;
-  padding: 0 8px;
-  border: 1.5px solid #e2e8f0;
-  background: white;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #475569;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 30px; height: 30px; padding: 0 8px;
+  border: 1.5px solid #e2e8f0; background: white; border-radius: 6px;
+  font-size: 12px; font-weight: 500; color: #475569; cursor: pointer;
+  font-family: inherit; transition: all 0.2s;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .page-btn:hover:not(:disabled) { border-color: #3aa6a6; color: #3aa6a6; background: #f0fafa; }
 .page-btn.active { background: #3aa6a6; color: white; border-color: #3aa6a6; font-weight: 700; }
 .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .nav-arrow-btn { padding: 0 10px; color: #64748b; }
-.page-ellipsis {
-  min-width: 28px;
-  height: 30px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: #94a3b8;
-  user-select: none;
-  letter-spacing: 1px;
-}
+.page-ellipsis { min-width: 28px; height: 30px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #94a3b8; user-select: none; letter-spacing: 1px; }
 
 /* ── MODALS ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
@@ -1277,5 +1566,6 @@ export default {
   .result-stats { gap: 0; }
   .pagination { gap: 3px; }
   .page-btn { min-width: 28px; height: 28px; font-size: 11px; }
+  .filter-select-wrap { min-width: 140px; }
 }
 </style>

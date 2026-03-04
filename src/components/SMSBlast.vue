@@ -18,107 +18,58 @@
       </div>
       <nav class="sidebar-nav">
 
-        <!-- Dashboard — gated by permission for doctors -->
-        <router-link
-          v-if="isAdmin || doctorCan('view_dashboard')"
-          to="/dashboard" class="nav-item" active-class="active">
-          <span class="nav-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-            </svg>
-          </span>
+        <router-link v-if="isAdmin || doctorCan('view_dashboard')" to="/dashboard" class="nav-item" active-class="active">
+          <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></span>
           <span class="nav-label">Dashboard</span>
         </router-link>
 
-        <!-- Schedule — gated by permission for doctors -->
-        <router-link
-          v-if="isAdmin || doctorCan('view_schedule')"
-          to="/schedule" class="nav-item" active-class="active">
+        <router-link v-if="isAdmin || doctorCan('view_schedule')" to="/schedule" class="nav-item" active-class="active">
           <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></span>
           <span class="nav-label">Schedule</span>
         </router-link>
 
-        <!-- Appointments — dropdown hidden entirely if doctor has none of the three sub-permissions -->
         <template v-if="isAdmin || doctorCan('book_appointment') || doctorCan('view_appointments') || doctorCan('view_queue')">
           <div class="nav-item nav-dropdown" :class="{ open: appointmentsOpen }" @click="appointmentsOpen = !appointmentsOpen">
-            <span class="nav-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </span>
+            <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></span>
             <span class="nav-label">Appointments</span>
-            <svg class="nav-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
+            <svg class="nav-arrow" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </div>
           <div class="nav-sub" v-show="appointmentsOpen">
-            <router-link
-              v-if="isAdmin || doctorCan('book_appointment')"
-              to="/appointments/book" class="nav-sub-item" active-class="active"
-            >Book Appointment</router-link>
-            <router-link
-              v-if="isAdmin || doctorCan('view_appointments')"
-              to="/appointments/all" class="nav-sub-item" active-class="active"
-            >All Appointments</router-link>
-            <router-link
-              v-if="isAdmin || doctorCan('view_queue')"
-              to="/appointments/queue" class="nav-sub-item" active-class="active"
-            >Queue</router-link>
+            <router-link v-if="isAdmin || doctorCan('book_appointment')"   to="/appointments/book"  class="nav-sub-item" active-class="active">Book Appointment</router-link>
+            <router-link v-if="isAdmin || doctorCan('view_appointments')"  to="/appointments/all"   class="nav-sub-item" active-class="active">All Appointments</router-link>
+            <router-link v-if="isAdmin || doctorCan('view_queue')"         to="/appointments/queue" class="nav-sub-item" active-class="active">Queue</router-link>
           </div>
         </template>
 
-        <!-- Medical Records — gated -->
-        <router-link
-          v-if="isAdmin || doctorCan('view_medical_records')"
-          to="/medical-records" class="nav-item" active-class="active">
-          <span class="nav-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-          </span>
+        <router-link v-if="isAdmin || doctorCan('view_medical_records')" to="/medical-records" class="nav-item" active-class="active">
+          <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></span>
           <span class="nav-label">Medical Records</span>
         </router-link>
 
-        <!-- Patients — gated -->
-        <router-link
-          v-if="isAdmin || doctorCan('view_patients')"
-          to="/patients" class="nav-item" active-class="active">
-          <span class="nav-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-          </span>
+        <router-link v-if="isAdmin || doctorCan('view_patients')" to="/patients" class="nav-item" active-class="active">
+          <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></span>
           <span class="nav-label">Patients</span>
         </router-link>
 
-        <!-- Doctors List — admin only -->
         <router-link v-if="isAdmin" to="/adding-doctor" class="nav-item" active-class="active">
-          <span class="nav-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-            </svg>
-          </span>
+          <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg></span>
           <span class="nav-label">Doctors List</span>
         </router-link>
 
-        <!-- Access Control — admin only -->
         <router-link v-if="isAdmin" to="/doctor-access" class="nav-item" active-class="active">
           <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></span>
           <span class="nav-label">Access Control</span>
         </router-link>
 
-        <!-- SMS Blast — admin only -->
         <router-link v-if="isAdmin" to="/sms-blast" class="nav-item" active-class="active">
           <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></span>
           <span class="nav-label">SMS Blast</span>
         </router-link>
 
-        <!-- Doctor role tag -->
         <div v-if="!isAdmin" class="role-tag">
           <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span class="nav-label">Doctor Account</span>
         </div>
-
       </nav>
     </aside>
 
@@ -131,6 +82,64 @@
           </button>
         </div>
         <div class="topbar-right">
+          <div class="topbar-btn notif-wrapper" @click="notifOpen = !notifOpen" v-click-outside="() => notifOpen = false">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <span class="notif-badge" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+
+            <div class="dropdown notif-dropdown" v-show="notifOpen" @click.stop>
+              <div class="dropdown-header">
+                <span>Notifications</span>
+                <button class="mark-read" @click.stop="markAllRead" :disabled="unreadCount === 0">Mark all read</button>
+              </div>
+
+              <div v-if="notifLoading" class="notif-loading-row">
+                <div class="notif-spinner"></div> Loading...
+              </div>
+
+              <div v-else-if="notifications.length === 0" class="notif-empty-row">
+                No notifications
+              </div>
+
+              <template v-else>
+                <div
+                  v-for="n in notifications"
+                  :key="n.id"
+                  class="notif-item"
+                  :class="{ unread: !n.is_read }"
+                  @click.stop="handleNotifClick(n)"
+                >
+                  <div class="notif-dot" :class="{ read: n.is_read }"></div>
+                  <div>
+                    <p class="notif-title">{{ n.title }}</p>
+                    <p class="notif-time">{{ n.body }}</p>
+                    <p class="notif-time" style="color:#b0c4c4; margin-top:2px">{{ formatNotifTime(n.created_at) }}</p>
+                  </div>
+                </div>
+              </template>
+
+              <div v-if="isAdmin" class="notif-compose-wrap">
+                <button class="notif-compose-btn" @click.stop="notifCompose = !notifCompose">
+                  + Send to Doctor
+                </button>
+                <div v-if="notifCompose" class="notif-compose-box" @click.stop>
+                  <select v-model="notifForm.target" class="notif-compose-input">
+                    <option value="">All Doctors</option>
+                    <option v-for="d in doctors" :key="d.id" :value="`Dr. ${d.first_name} ${d.last_name}`">
+                      Dr. {{ d.first_name }} {{ d.last_name }}
+                    </option>
+                  </select>
+                  <input v-model="notifForm.title" class="notif-compose-input" placeholder="Title" />
+                  <textarea v-model="notifForm.body" class="notif-compose-textarea" placeholder="Message..." rows="2"></textarea>
+                  <div style="display:flex;gap:6px;margin-top:6px">
+                    <button class="notif-cancel-btn" @click.stop="notifCompose = false">Cancel</button>
+                    <button class="notif-send-btn" @click.stop="sendNotif" :disabled="!notifForm.title || !notifForm.body">Send</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="account-wrapper" @click="accountOpen = !accountOpen" v-click-outside="() => accountOpen = false">
             <div class="account-avatar"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
             <div class="dropdown account-dropdown" v-show="accountOpen" @click.stop>
@@ -154,13 +163,11 @@
         </div>
       </header>
 
-      <!-- ACCESS DENIED — doctor trying to reach this admin-only page -->
+      <!-- ACCESS DENIED -->
       <main class="content" v-if="!isAdmin">
         <div class="access-denied-page">
           <div class="access-denied-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </div>
           <h2 class="access-denied-title">Admin Access Only</h2>
           <p class="access-denied-text">This page is restricted to administrators. You do not have permission to access SMS Blast.</p>
@@ -188,7 +195,17 @@
               </div>
               <div class="field-group">
                 <label>Hospital / Sender Name</label>
-                <input type="text" v-model="senderName" placeholder="e.g. CareQueue " />
+                <input
+                  type="text"
+                  v-model="senderName"
+                  placeholder="e.g. CareQueue"
+                  :class="{ 'input-warn': senderName.length > 11 }"
+                />
+                <!-- ✅ NEW: Semaphore sender name warning -->
+                <div v-if="senderName.length > 11" class="sender-warn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  Semaphore limits sender names to 11 characters. Will be sent as: <strong>"{{ senderName.slice(0, 11) }}"</strong>
+                </div>
               </div>
             </div>
 
@@ -199,7 +216,6 @@
                 <span>Message</span>
               </div>
 
-              <!-- Quick Templates -->
               <div class="template-row">
                 <span class="template-label">Quick Templates:</span>
                 <div class="template-chips">
@@ -207,7 +223,6 @@
                 </div>
               </div>
 
-              <!-- Variable Tags -->
               <div class="variable-row">
                 <span class="template-label">Insert Variable:</span>
                 <div class="template-chips">
@@ -231,14 +246,13 @@
                 </div>
               </div>
 
-              <!-- Schedule Option -->
               <div class="schedule-toggle" @click="scheduled = !scheduled">
                 <div class="toggle-track" :class="{ active: scheduled }">
                   <div class="toggle-thumb"></div>
                 </div>
                 <span>Schedule for later</span>
               </div>
-              <div class="field-group" v-if="scheduled">
+              <div class="field-group" v-if="scheduled" style="margin-top:12px">
                 <label>Send Date & Time</label>
                 <input type="datetime-local" v-model="scheduleTime" :min="minScheduleTime" />
               </div>
@@ -252,7 +266,7 @@
               </div>
               <div class="phone-mockup">
                 <div class="phone-screen">
-                  <div class="phone-sender">{{ senderName || 'Hospital' }}</div>
+                  <div class="phone-sender">{{ senderName.slice(0, 11) || 'Hospital' }}</div>
                   <div class="phone-bubble">
                     <p>{{ previewMessage || 'Your message will appear here...' }}</p>
                   </div>
@@ -266,7 +280,6 @@
           <!-- ── RIGHT: Recipients Panel ── -->
           <div class="recipients-panel">
 
-            <!-- Stats bar -->
             <div class="stats-bar">
               <div class="stat-pill">
                 <span class="stat-pill-num">{{ patients.length }}</span>
@@ -282,7 +295,6 @@
               </div>
             </div>
 
-            <!-- Filter & Search -->
             <div class="panel-card">
               <div class="panel-card-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -322,13 +334,7 @@
                   :class="{ selected: isSelected(patient), 'no-number': !patient.mobile }"
                   @click="patient.mobile && togglePatient(patient)"
                 >
-                  <input
-                    type="checkbox"
-                    :checked="isSelected(patient)"
-                    :disabled="!patient.mobile"
-                    @click.stop
-                    @change="togglePatient(patient)"
-                  />
+                  <input type="checkbox" :checked="isSelected(patient)" :disabled="!patient.mobile" @click.stop @change="togglePatient(patient)" />
                   <div class="patient-avatar">{{ initials(patient) }}</div>
                   <div class="patient-info">
                     <span class="patient-name">{{ patient.last_name }}, {{ patient.first_name }}</span>
@@ -340,12 +346,7 @@
               </div>
             </div>
 
-            <!-- Send Button -->
-            <button
-              class="btn-send"
-              :disabled="!canSend || sending"
-              @click="confirmSend"
-            >
+            <button class="btn-send" :disabled="!canSend || sending" @click="confirmSend">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
               <span v-if="sending">Sending... ({{ sentCount }}/{{ selectedPatients.length }})</span>
               <span v-else-if="scheduled">Schedule SMS Blast</span>
@@ -372,6 +373,8 @@
                 <th>Sender</th>
                 <th>Message Preview</th>
                 <th>Recipients</th>
+                <th>Sent</th>
+                <th>Failed</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -380,7 +383,10 @@
                 <td class="history-date">{{ formatDate(h.sent_at) }}</td>
                 <td>{{ h.sender }}</td>
                 <td class="history-msg">{{ h.message.substring(0, 60) }}{{ h.message.length > 60 ? '...' : '' }}</td>
-                <td><span class="recip-badge">{{ h.recipient_count }} sent</span></td>
+                <td><span class="recip-badge">{{ h.recipient_count }}</span></td>
+                <!-- ✅ NEW: show sent/failed breakdown -->
+                <td><span class="sent-badge">{{ h.sent_count ?? '—' }}</span></td>
+                <td><span class="failed-badge" v-if="h.failed_count > 0">{{ h.failed_count }}</span><span v-else>—</span></td>
                 <td><span :class="['status-badge', h.status]">{{ h.status }}</span></td>
               </tr>
             </tbody>
@@ -400,7 +406,11 @@
           <div class="confirm-summary">
             <div class="confirm-row">
               <span class="confirm-label">Sender</span>
-              <span class="confirm-value">{{ senderName }}</span>
+              <!-- ✅ Show truncated sender name if over 11 chars -->
+              <span class="confirm-value">
+                {{ senderName.slice(0, 11) }}
+                <span v-if="senderName.length > 11" class="truncate-note">(trimmed to 11 chars)</span>
+              </span>
             </div>
             <div class="confirm-row">
               <span class="confirm-label">Recipients</span>
@@ -451,32 +461,35 @@ export default {
   data() {
     return {
       sidebarCollapsed: false,
+      notifOpen: false,
+      doctors: [],
+      notifLoading: false,
+      notifications: [],
+      unreadCount: 0,
+      notifCompose: false,
+      notifForm: { target: '', title: '', body: '' },
       accountOpen: false,
       appointmentsOpen: false,
       currentUser: JSON.parse(localStorage.getItem('user')) || { name: 'Admin', email: '' },
       livePerms: JSON.parse(localStorage.getItem('doctorPermissions') || '{}'),
       permPollingInterval: null,
 
-      // Compose
-      senderName: 'CareQueue Medical Center',
+      senderName: 'CareQueue',   // ✅ default ≤ 11 chars
       messageBody: '',
       scheduled: false,
       scheduleTime: '',
 
-      // Recipients
       patients: [],
       selectedPatients: [],
       searchPatient: '',
       filterHasNumber: 'all',
       loadingPatients: false,
 
-      // UI state
       sending: false,
       sentCount: 0,
       showConfirm: false,
       toast: null,
 
-      // History
       history: [],
 
       templates: [
@@ -533,12 +546,14 @@ export default {
       return Math.ceil(len / 153)
     },
     previewMessage() {
+      // Use truncated sender in preview, matching what Semaphore will actually send
+      const sender = this.senderName.slice(0, 11) || 'Hospital'
       return this.messageBody
-        .replace(/{name}/g, 'Juan Dela Cruz')
-        .replace(/{date}/g, 'March 5, 2026')
-        .replace(/{time}/g, '10:00 AM')
-        .replace(/{doctor}/g, 'Dr. Santos')
-        .replace(/{hospital}/g, this.senderName || 'Hospital')
+        .replace(/{name}/g,     'Juan Dela Cruz')
+        .replace(/{date}/g,     'March 5, 2026')
+        .replace(/{time}/g,     '10:00 AM')
+        .replace(/{doctor}/g,   'Dr. Santos')
+        .replace(/{hospital}/g, sender)
     },
     currentTimeStr() {
       return new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' })
@@ -563,7 +578,69 @@ export default {
     }
   },
   methods: {
-    // ── Permission helpers ──────────────────────────────
+
+    async fetchNotifications() {
+      this.notifLoading = true
+      try {
+        const role = localStorage.getItem('role')
+        const user = JSON.parse(localStorage.getItem('user')) || {}
+        let url = `http://localhost:8000/notifications?role=${role}`
+        if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
+        const res = await fetch(url)
+        const data = await res.json()
+        this.notifications = data.notifications || []
+        this.unreadCount   = data.unreadCount   || 0
+      } catch (err) {
+        console.error('Notifications error:', err)
+      } finally {
+        this.notifLoading = false
+      }
+    },
+
+    async markAllRead() {
+      const role = localStorage.getItem('role')
+      const user = JSON.parse(localStorage.getItem('user')) || {}
+      await fetch('http://localhost:8000/notifications/mark-read', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, doctor: user.name })
+      }).catch(() => {})
+      this.notifications = this.notifications.map(n => ({ ...n, is_read: 1 }))
+      this.unreadCount = 0
+    },
+
+    handleNotifClick(n) {
+      n.is_read = 1
+      this.unreadCount = this.notifications.filter(x => !x.is_read).length
+      if (n.link) { this.$router.push(n.link); this.notifOpen = false }
+    },
+
+    async sendNotif() {
+      if (!this.notifForm.title || !this.notifForm.body) return
+      await fetch('http://localhost:8000/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: this.notifForm.target ? 'doctor' : 'both',
+          target_doctor: this.notifForm.target || null,
+          title: this.notifForm.title,
+          body: this.notifForm.body
+        })
+      }).catch(() => {})
+      this.notifForm = { target: '', title: '', body: '' }
+      this.notifCompose = false
+      await this.fetchNotifications()
+    },
+
+    formatNotifTime(dateStr) {
+      if (!dateStr) return ''
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+      if (diff < 60)    return 'just now'
+      if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    },
+
     doctorCan(key) {
       return !!this.livePerms[key]
     },
@@ -606,14 +683,11 @@ export default {
     },
     toggleSelectAll() {
       const withNum = this.patients.filter(p => p.mobile)
-      if (this.allSelected) {
-        this.selectedPatients = []
-      } else {
-        this.selectedPatients = [...withNum]
-      }
+      if (this.allSelected) this.selectedPatients = []
+      else this.selectedPatients = [...withNum]
     },
     applyTemplate(t) {
-      this.messageBody = t.body.replace(/{hospital}/g, this.senderName || 'Hospital')
+      this.messageBody = t.body.replace(/{hospital}/g, this.senderName.slice(0, 11) || 'Hospital')
     },
     insertVariable(v) {
       const el = this.$refs.messageBox
@@ -636,7 +710,6 @@ export default {
       this.showConfirm = false
 
       try {
-        // Build the payload
         const payload = {
           sender: this.senderName,
           message: this.messageBody,
@@ -644,48 +717,52 @@ export default {
             id: p.id,
             name: `${p.first_name} ${p.last_name}`,
             mobile: p.mobile,
-            // Personalize message per recipient
             personalizedMessage: this.messageBody
-              .replace(/{name}/g, `${p.first_name} ${p.last_name}`)
-              .replace(/{hospital}/g, this.senderName)
+              .replace(/{name}/g,     `${p.first_name} ${p.last_name}`)
+              .replace(/{hospital}/g, this.senderName.slice(0, 11))
           })),
           scheduled: this.scheduled,
           scheduleTime: this.scheduled ? this.scheduleTime : null,
         }
 
-        const res = await fetch('http://localhost:8000/sms-blast', {
+        const res  = await fetch('http://localhost:8000/sms-blast', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         })
-
         const data = await res.json()
+
         if (!res.ok) throw new Error(data.message || 'Failed to send SMS blast.')
 
-        this.sentCount = this.selectedPatients.length
+        // ✅ Use actual sent count from backend response
+        this.sentCount = data.sent ?? this.selectedPatients.length
+        const failedCount = data.failed ?? 0
 
-        // Add to local history
+        // Add to local history (backend also persists it in DB)
         this.history.unshift({
           id: Date.now(),
           sent_at: new Date().toISOString(),
-          sender: this.senderName,
+          sender: this.senderName.slice(0, 11),
           message: this.messageBody,
           recipient_count: this.selectedPatients.length,
-          status: this.scheduled ? 'scheduled' : 'sent'
+          sent_count: this.sentCount,
+          failed_count: failedCount,
+          status: this.scheduled ? 'scheduled' : (failedCount > 0 ? 'partial' : 'sent')
         })
 
-        this.showToast(
-          this.scheduled
-            ? `SMS Blast scheduled for ${this.formatSchedule}!`
-            : `SMS Blast sent to ${this.sentCount} recipient${this.sentCount !== 1 ? 's' : ''}!`,
-          'toast-green'
-        )
+        // ✅ Distinguish full success vs partial failure
+        if (this.scheduled) {
+          this.showToast(`SMS Blast scheduled for ${this.formatSchedule}!`, 'toast-green')
+        } else if (failedCount === 0) {
+          this.showToast(`SMS Blast sent to ${this.sentCount} recipient${this.sentCount !== 1 ? 's' : ''}!`, 'toast-green')
+        } else {
+          this.showToast(`Sent: ${this.sentCount} ✓  Failed: ${failedCount} ✗ — check console for details.`, 'toast-blue')
+        }
 
-        // Reset form
         this.selectedPatients = []
-        this.messageBody = ''
-        this.scheduled = false
-        this.scheduleTime = ''
+        this.messageBody      = ''
+        this.scheduled        = false
+        this.scheduleTime     = ''
 
       } catch (err) {
         this.showToast(err.message || 'Failed to send SMS Blast.', 'toast-red')
@@ -695,7 +772,7 @@ export default {
     },
     showToast(message, type = 'toast-green') {
       this.toast = { message, type }
-      setTimeout(() => { this.toast = null }, 4000)
+      setTimeout(() => { this.toast = null }, 5000)
     },
     async fetchPatients() {
       this.loadingPatients = true
@@ -734,9 +811,13 @@ export default {
     this.fetchPatients()
     this.fetchHistory()
     this.startPermPolling()
+    this.fetchNotifications()
+    fetch('http://localhost:8000/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
+    this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   },
   beforeUnmount() {
     clearInterval(this.permPollingInterval)
+    clearInterval(this._notifPoll)
   }
 }
 </script>
@@ -778,6 +859,38 @@ export default {
 .hamburger { background: none; border: none; cursor: pointer; color: #fff; display: flex; padding: 6px; border-radius: 8px; transition: background 0.2s; }
 .hamburger:hover { background: rgba(255,255,255,0.15); }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
+.topbar-btn { position: relative; background: none; border: none; cursor: pointer; color: #fff; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.topbar-btn:hover { background: rgba(255,255,255,0.15); }
+.notif-badge { position: absolute; top: 4px; right: 4px; background: #ef4444; color: white; font-size: 9px; font-weight: 700; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; }
+.notif-wrapper { position: relative; }
+.dropdown { position: absolute; top: calc(100% + 10px); right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); z-index: 200; overflow: hidden; animation: fadeDown 0.15s ease; }
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.dropdown-header { padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; color: #1e293b; border-bottom: 1px solid #f1f5f9; }
+.mark-read { font-size: 11px; color: #3aa6a6; text-decoration: none; font-weight: 500; }
+.notif-dropdown { width: 300px; }
+.notif-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.15s; }
+.notif-item:hover { background: #f8fafc; }
+.notif-item.unread { background: #f0fafa; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #3aa6a6; margin-top: 5px; flex-shrink: 0; }
+.notif-dot.read { background: #cbd5e1; }
+.notif-title { font-size: 13px; color: #1e293b; font-weight: 500; }
+.notif-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.notif-loading-row { display:flex; align-items:center; gap:8px; padding:16px; color:#94a3b8; font-size:13px; justify-content:center; }
+.notif-spinner { width:16px; height:16px; border:2px solid #e2e8f0; border-top-color:#3aa6a6; border-radius:50%; animation:spin 0.7s linear infinite; }
+.notif-empty-row { padding:20px; text-align:center; color:#94a3b8; font-size:13px; }
+.mark-read { font-size:11px; color:#3aa6a6; background:none; border:none; cursor:pointer; font-weight:500; padding:0; }
+.mark-read:disabled { opacity:0.4; cursor:default; }
+.notif-compose-wrap { border-top:1px solid #f1f5f9; padding:10px 14px; }
+.notif-compose-btn { width:100%; padding:7px; background:#f0fafa; border:1.5px dashed #3aa6a6; border-radius:8px; color:#0f766e; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+.notif-compose-btn:hover { background:#ccfbf1; }
+.notif-compose-box { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.notif-compose-input { width:100%; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#475569; font-family:inherit; outline:none; }
+.notif-compose-input:focus { border-color:#3aa6a6; }
+.notif-compose-textarea { width:100%; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#475569; font-family:inherit; outline:none; resize:none; }
+.notif-compose-textarea:focus { border-color:#3aa6a6; }
+.notif-cancel-btn { flex:1; padding:6px; border:1.5px solid #e2e8f0; background:white; border-radius:7px; font-size:12px; font-weight:600; color:#64748b; cursor:pointer; font-family:inherit; }
+.notif-send-btn { flex:1; padding:6px; background:#3aa6a6; border:none; border-radius:7px; font-size:12px; font-weight:600; color:white; cursor:pointer; font-family:inherit; }
+.notif-send-btn:disabled { opacity:0.5; cursor:not-allowed; }
 .account-wrapper { position: relative; cursor: pointer; }
 .account-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; }
 .dropdown { position: absolute; top: calc(100% + 10px); right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.12); z-index: 200; overflow: hidden; animation: fadeDown 0.15s ease; }
@@ -792,17 +905,10 @@ export default {
 .dropdown-item:hover { background: #f8fafc; color: #1e293b; }
 .dropdown-item.logout { color: #ef4444; }
 .dropdown-item.logout:hover { background: #fff5f5; }
-
-/* Role pill in account dropdown */
 .role-pill { margin-top: 4px; display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 20px; }
 .role-pill.admin  { background: #dbeafe; color: #1d4ed8; }
 .role-pill.doctor { background: #d1fae5; color: #065f46; }
-
-/* Doctor role tag in sidebar */
 .role-tag { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #3aa6a6; font-size: 12px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto; }
-
-/* Nav locked sub item */
-.nav-sub-locked { display: flex; align-items: center; gap: 6px; padding: 8px 16px 8px 46px; color: #475569; font-size: 12px; font-style: italic; }
 
 /* ACCESS DENIED PAGE */
 .access-denied-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 20px; text-align: center; padding: 40px; }
@@ -843,6 +949,13 @@ export default {
 }
 .field-group textarea:focus { border-color: #3aa6a6; box-shadow: 0 0 0 3px rgba(58,166,166,0.1); }
 .required { color: #ef4444; }
+
+/* ✅ NEW: Sender name warning styles */
+.input-warn { border-color: #f97316 !important; }
+.input-warn:focus { border-color: #f97316 !important; box-shadow: 0 0 0 3px rgba(249,115,22,0.1) !important; }
+.sender-warn { display: flex; align-items: flex-start; gap: 6px; font-size: 11.5px; color: #92400e; background: #fef3c7; padding: 8px 12px; border-radius: 8px; border: 1px solid #fde68a; line-height: 1.5; margin-top: 2px; }
+.sender-warn svg { flex-shrink: 0; margin-top: 1px; }
+.truncate-note { font-size: 11px; color: #f97316; margin-left: 4px; font-style: italic; }
 
 /* Templates */
 .template-row, .variable-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -933,12 +1046,15 @@ export default {
 .history-table tr:last-child td { border-bottom: none; }
 .history-table tr:hover td { background: #f8fafc; }
 .history-date { font-size: 12px; color: #64748b; white-space: nowrap; }
-.history-msg { max-width: 280px; color: #1e293b; }
-.recip-badge { font-size: 11px; font-weight: 700; color: #2563eb; background: #dbeafe; padding: 3px 10px; border-radius: 20px; }
+.history-msg { max-width: 240px; color: #1e293b; }
+.recip-badge  { font-size: 11px; font-weight: 700; color: #2563eb; background: #dbeafe; padding: 3px 10px; border-radius: 20px; }
+.sent-badge   { font-size: 11px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 20px; }
+.failed-badge { font-size: 11px; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 3px 10px; border-radius: 20px; }
 .status-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
 .status-badge.sent      { color: #16a34a; background: #dcfce7; }
 .status-badge.scheduled { color: #f97316; background: #ffedd5; }
 .status-badge.failed    { color: #dc2626; background: #fee2e2; }
+.status-badge.partial   { color: #92400e; background: #fef3c7; }
 
 /* ── CONFIRM MODAL ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }

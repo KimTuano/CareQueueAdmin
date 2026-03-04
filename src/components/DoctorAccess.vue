@@ -124,23 +124,57 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
             </svg>
-            <span class="notif-badge" v-if="waitingCount > 0">{{ waitingCount }}</span>
+            <span class="notif-badge" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+
             <div class="dropdown notif-dropdown" v-show="notifOpen" @click.stop>
               <div class="dropdown-header">
                 <span>Notifications</span>
-                <a href="#" class="mark-read">Mark all read</a>
+                <button class="mark-read" @click.stop="markAllRead" :disabled="unreadCount === 0">Mark all read</button>
               </div>
-              <div v-if="waitingCount > 0" class="notif-item unread">
-                <div class="notif-dot"></div>
-                <div><p class="notif-title">{{ waitingCount }} appointment(s) waiting</p><p class="notif-time">Pending approval</p></div>
+
+              <div v-if="notifLoading" class="notif-loading-row">
+                <div class="notif-spinner"></div> Loading...
               </div>
-              <div v-if="doctorsIN > 0" class="notif-item unread">
-                <div class="notif-dot"></div>
-                <div><p class="notif-title">{{ doctorsIN }} doctor(s) currently IN</p><p class="notif-time">Available now</p></div>
+
+              <div v-else-if="notifications.length === 0" class="notif-empty-row">
+                No notifications
               </div>
-              <div class="notif-item">
-                <div class="notif-dot read"></div>
-                <div><p class="notif-title">{{ totalDoctors }} total doctors registered</p><p class="notif-time">In the system</p></div>
+
+              <template v-else>
+                <div
+                  v-for="n in notifications"
+                  :key="n.id"
+                  class="notif-item"
+                  :class="{ unread: !n.is_read }"
+                  @click.stop="handleNotifClick(n)"
+                >
+                  <div class="notif-dot" :class="{ read: n.is_read }"></div>
+                  <div>
+                    <p class="notif-title">{{ n.title }}</p>
+                    <p class="notif-time">{{ n.body }}</p>
+                    <p class="notif-time" style="color:#b0c4c4; margin-top:2px">{{ formatNotifTime(n.created_at) }}</p>
+                  </div>
+                </div>
+              </template>
+
+              <div v-if="isAdmin" class="notif-compose-wrap">
+                <button class="notif-compose-btn" @click.stop="notifCompose = !notifCompose">
+                  + Send to Doctor
+                </button>
+                <div v-if="notifCompose" class="notif-compose-box" @click.stop>
+                  <select v-model="notifForm.target" class="notif-compose-input">
+                    <option value="">All Doctors</option>
+                    <option v-for="d in doctors" :key="d.id" :value="`Dr. ${d.first_name} ${d.last_name}`">
+                      Dr. {{ d.first_name }} {{ d.last_name }}
+                    </option>
+                  </select>
+                  <input v-model="notifForm.title" class="notif-compose-input" placeholder="Title" />
+                  <textarea v-model="notifForm.body" class="notif-compose-textarea" placeholder="Message..." rows="2"></textarea>
+                  <div style="display:flex;gap:6px;margin-top:6px">
+                    <button class="notif-cancel-btn" @click.stop="notifCompose = false">Cancel</button>
+                    <button class="notif-send-btn" @click.stop="sendNotif" :disabled="!notifForm.title || !notifForm.body">Send</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -454,6 +488,11 @@ export default {
     return {
       sidebarCollapsed: false,
       notifOpen: false,
+      notifLoading: false,
+      notifications: [],
+      unreadCount: 0,
+      notifCompose: false,
+      notifForm: { target: '', title: '', body: '' },
       accountOpen: false,
       appointmentsOpen: false,
       loadingDoctors: false,
@@ -566,6 +605,69 @@ export default {
   },
 
   methods: {
+
+    async fetchNotifications() {
+      this.notifLoading = true
+      try {
+        const role = localStorage.getItem('role')
+        const user = JSON.parse(localStorage.getItem('user')) || {}
+        let url = `http://localhost:8000/notifications?role=${role}`
+        if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
+        const res = await fetch(url)
+        const data = await res.json()
+        this.notifications = data.notifications || []
+        this.unreadCount   = data.unreadCount   || 0
+      } catch (err) {
+        console.error('Notifications error:', err)
+      } finally {
+        this.notifLoading = false
+      }
+    },
+
+    async markAllRead() {
+      const role = localStorage.getItem('role')
+      const user = JSON.parse(localStorage.getItem('user')) || {}
+      await fetch('http://localhost:8000/notifications/mark-read', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, doctor: user.name })
+      }).catch(() => {})
+      this.notifications = this.notifications.map(n => ({ ...n, is_read: 1 }))
+      this.unreadCount = 0
+    },
+
+    handleNotifClick(n) {
+      n.is_read = 1
+      this.unreadCount = this.notifications.filter(x => !x.is_read).length
+      if (n.link) { this.$router.push(n.link); this.notifOpen = false }
+    },
+
+    async sendNotif() {
+      if (!this.notifForm.title || !this.notifForm.body) return
+      await fetch('http://localhost:8000/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: this.notifForm.target ? 'doctor' : 'both',
+          target_doctor: this.notifForm.target || null,
+          title: this.notifForm.title,
+          body: this.notifForm.body
+        })
+      }).catch(() => {})
+      this.notifForm = { target: '', title: '', body: '' }
+      this.notifCompose = false
+      await this.fetchNotifications()
+    },
+
+    formatNotifTime(dateStr) {
+      if (!dateStr) return ''
+      const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000)
+      if (diff < 60)    return 'just now'
+      if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    },
+
     doctorCan(key) {
       return !!this.livePerms[key]
     },
@@ -717,11 +819,17 @@ export default {
     }
   },
 
+  beforeUnmount() {
+    clearInterval(this._notifPoll)
+  },
+
   mounted() {
     if (this.isAdmin) {
       this.fetchDoctors()
       this.fetchWaitingCount()
     }
+    this.fetchNotifications()
+    this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   }
 }
 </script>
@@ -776,6 +884,22 @@ export default {
 .notif-dot.read { background: #cbd5e1; }
 .notif-title { font-size: 13px; color: #1e293b; font-weight: 500; }
 .notif-time { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.notif-loading-row { display:flex; align-items:center; gap:8px; padding:16px; color:#94a3b8; font-size:13px; justify-content:center; }
+.notif-spinner { width:16px; height:16px; border:2px solid #e2e8f0; border-top-color:#3aa6a6; border-radius:50%; animation:spin 0.7s linear infinite; }
+.notif-empty-row { padding:20px; text-align:center; color:#94a3b8; font-size:13px; }
+.mark-read { font-size:11px; color:#3aa6a6; background:none; border:none; cursor:pointer; font-weight:500; padding:0; }
+.mark-read:disabled { opacity:0.4; cursor:default; }
+.notif-compose-wrap { border-top:1px solid #f1f5f9; padding:10px 14px; }
+.notif-compose-btn { width:100%; padding:7px; background:#f0fafa; border:1.5px dashed #3aa6a6; border-radius:8px; color:#0f766e; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+.notif-compose-btn:hover { background:#ccfbf1; }
+.notif-compose-box { margin-top:8px; display:flex; flex-direction:column; gap:6px; }
+.notif-compose-input { width:100%; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#475569; font-family:inherit; outline:none; }
+.notif-compose-input:focus { border-color:#3aa6a6; }
+.notif-compose-textarea { width:100%; padding:7px 10px; border:1.5px solid #e2e8f0; border-radius:7px; font-size:12.5px; color:#475569; font-family:inherit; outline:none; resize:none; }
+.notif-compose-textarea:focus { border-color:#3aa6a6; }
+.notif-cancel-btn { flex:1; padding:6px; border:1.5px solid #e2e8f0; background:white; border-radius:7px; font-size:12px; font-weight:600; color:#64748b; cursor:pointer; font-family:inherit; }
+.notif-send-btn { flex:1; padding:6px; background:#3aa6a6; border:none; border-radius:7px; font-size:12px; font-weight:600; color:white; cursor:pointer; font-family:inherit; }
+.notif-send-btn:disabled { opacity:0.5; cursor:not-allowed; }
 .account-wrapper { position: relative; cursor: pointer; }
 .account-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: white; }
 .account-dropdown { width: 230px; }
