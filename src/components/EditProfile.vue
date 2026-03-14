@@ -72,7 +72,7 @@ export default {
       this.errorMsg = ''
       const currentUser = JSON.parse(localStorage.getItem('user'))
 
-      axios.put('http://https://carequeue-admin.com/api/update-profile', {
+      axios.put('https://carequeue-admin.com/api/update-profile', {
         currentEmail: currentUser.email,
         name: this.form.name,
         email: this.form.email,

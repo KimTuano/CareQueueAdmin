@@ -303,7 +303,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://https://carequeue-admin.com/api/notifications?role=${role}`
+        let url = `https://carequeue-admin.com/api/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -319,7 +319,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://https://carequeue-admin.com/api/notifications/mark-read', {
+      await fetch('https://carequeue-admin.com/api/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -336,7 +336,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://https://carequeue-admin.com/api/notifications', {
+      await fetch('https://carequeue-admin.com/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -370,8 +370,8 @@ export default {
           ? `?doctor=${encodeURIComponent(user.name.replace(/^Dr\.\s*/i, ''))}`
           : ''
         const [pRes, aRes] = await Promise.all([
-          fetch(`http://https://carequeue-admin.com/api/patients${doctorParam}`),
-          fetch(`http://https://carequeue-admin.com/api/appointments${doctorParam}`),
+          fetch(`https://carequeue-admin.com/api/patients${doctorParam}`),
+          fetch(`https://carequeue-admin.com/api/appointments${doctorParam}`),
         ])
         this.patients     = await pRes.json()
         this.appointments = await aRes.json()
@@ -411,7 +411,7 @@ export default {
   mounted() {
     this.fetchData()
     this.fetchNotifications()
-    fetch('http://https://carequeue-admin.com/api/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
+    fetch('https://carequeue-admin.com/api/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   }
 }

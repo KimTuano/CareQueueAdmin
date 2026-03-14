@@ -194,7 +194,7 @@ export default {
       this.errorMessage = ''
       this.loading = true
       try {
-        const response = await axios.post('http://https://carequeue-admin.com/api/login', this.login)
+        const response = await axios.post('https://carequeue-admin.com/api/login', this.login)
         const { user, role } = response.data
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', role)
