@@ -452,7 +452,7 @@
           <!-- Doctor picker -->
           <div class="avail-field-row">
             <label class="avail-label">Doctor</label>
-            <select class="avail-select" v-model="availModal.doctorId" @change="loadDoctorSchedule">
+            <select class="avail-select" v-model="availModal.doctorId" @change="availModal.hospital = ''; availModal.selectedSlots = {}">
               <option value="">— Select a doctor —</option>
               <option v-for="d in doctors" :key="d.id" :value="d.id">
                 Dr. {{ d.first_name }} {{ d.last_name }} · {{ d.specialization }}
@@ -460,8 +460,17 @@
             </select>
           </div>
 
-          <!-- Slot editor — only shown once a doctor is chosen -->
-          <template v-if="availModal.doctorId">
+          <!-- Hospital picker — shown after doctor is selected -->
+          <div class="avail-field-row" v-if="availModal.doctorId">
+            <label class="avail-label">Hospital</label>
+            <select class="avail-select" v-model="availModal.hospital" @change="loadDoctorSchedule">
+              <option value="">— Select a hospital —</option>
+              <option v-for="h in hospitals" :key="h.id" :value="h.name">{{ h.name }}</option>
+            </select>
+          </div>
+
+          <!-- Slot editor — only shown once a doctor AND hospital is chosen -->
+          <template v-if="availModal.doctorId && availModal.hospital">
 
             <div v-if="availModal.loadingSlots" class="avail-loading">
               <div class="spinner"></div> Loading saved schedule…
@@ -515,10 +524,11 @@
 
           </template>
 
-          <!-- Prompt when no doctor selected -->
+          <!-- Prompt when no doctor/hospital selected -->
           <div v-else class="avail-empty">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <p>Select a doctor above to manage their available time slots</p>
+            <p v-if="!availModal.doctorId">Select a doctor above to manage their available time slots</p>
+            <p v-else>Now select a hospital to set this doctor's schedule for that hospital</p>
           </div>
 
         </div><!-- /modal-body -->
@@ -528,7 +538,7 @@
           <button class="btn-skip" @click="availModal.show = false">Cancel</button>
           <button
             class="btn-save-avail"
-            :disabled="!availModal.doctorId || availModal.saving"
+            :disabled="!availModal.doctorId || !availModal.hospital || availModal.saving"
             @click="saveSchedule"
           >
             <svg v-if="!availModal.saving" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -596,12 +606,14 @@ export default {
       availModal: {
         show:        false,
         doctorId:    '',
+        hospital:    '',
         activeDay:   1,          // 1 = Monday default
         // selectedSlots: Map<dayOfWeek(0-6), Set<"HH:MM">>
         selectedSlots: {},
         loadingSlots: false,
         saving:       false,
       },
+      hospitals: [],
 
       monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
       // ✅ All statuses shown on calendar based on appointment_date
@@ -915,9 +927,9 @@ export default {
     // ── Availability modal methods ───────────────────────────
 
     openAvailModal() {
-      // Reset state and open
       this.availModal.show         = true
       this.availModal.doctorId     = ''
+      this.availModal.hospital     = ''
       this.availModal.activeDay    = 1
       this.availModal.selectedSlots = {}
       this.availModal.saving       = false
@@ -925,12 +937,14 @@ export default {
 
     async loadDoctorSchedule() {
       const id = this.availModal.doctorId
-      if (!id) return
+      const hospital = this.availModal.hospital
+      if (!id || !hospital) return
       this.availModal.loadingSlots  = true
       this.availModal.selectedSlots = {}
       try {
-        const res  = await fetch(`${API_BASE}/doctors/${id}/schedules`)
-        const data = await res.json()            // { schedules: [{day_of_week, time_slot}, …] }
+        const url = `${API_BASE}/doctors/${id}/schedules?hospital=${encodeURIComponent(hospital)}`
+        const res  = await fetch(url)
+        const data = await res.json()
         const map  = {}
         for (const row of (data.schedules || [])) {
           if (!map[row.day_of_week]) map[row.day_of_week] = new Set()
@@ -984,7 +998,7 @@ export default {
         const res = await fetch(`${API_BASE}/doctors/${id}/schedules`, {
           method:  'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ slots }),
+          body:    JSON.stringify({ slots, hospital: this.availModal.hospital }),
         })
         if (!res.ok) throw new Error()
         this.showToast('Schedule saved — patients will see updated slots instantly ✓', 'success')
@@ -1005,6 +1019,7 @@ export default {
     this.selectedDate = this.today
     this.fetchNotifications()
     fetch('https://carequeue-admin.com/api/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
+    fetch('https://carequeue-admin.com/api/hospitals').then(r=>r.json()).then(d=>{this.hospitals=d}).catch(()=>{})
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   }
 }
