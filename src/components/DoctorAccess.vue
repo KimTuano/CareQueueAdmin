@@ -611,7 +611,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://localhost:8000/notifications?role=${role}`
+        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -627,7 +627,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://localhost:8000/notifications/mark-read', {
+      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -644,7 +644,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://localhost:8000/notifications', {
+      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -675,7 +675,7 @@ export default {
     async fetchDoctors() {
       this.loadingDoctors = true
       try {
-        const res = await fetch('http://localhost:8000/doctors')
+        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/doctors')
         this.doctors = await res.json()
 
         this.totalDoctors = this.doctors.length
@@ -690,7 +690,7 @@ export default {
 
     async fetchWaitingCount() {
       try {
-        const res = await fetch('http://localhost:8000/appointments')
+        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/appointments')
         const appts = await res.json()
 
         this.waitingCount =
@@ -708,7 +708,7 @@ export default {
 
       try {
         const res = await fetch(
-          `http://localhost:8000/doctor-permissions/${doc.id}`
+          `http://${import.meta.env.VITE_API_BASE}/doctor-permissions/${doc.id}`
         )
 
         const data = await res.json()
@@ -760,7 +760,7 @@ export default {
 
       try {
         const res = await fetch(
-          `http://localhost:8000/doctor-permissions/${this.selectedDoctor.id}`,
+          `http://${import.meta.env.VITE_API_BASE}/doctor-permissions/${this.selectedDoctor.id}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

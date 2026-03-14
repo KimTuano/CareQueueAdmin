@@ -632,7 +632,7 @@ export default {
   async mounted() {
     await this.fetchPatient(this.$route.params.id)
     this.fetchNotifications()
-    fetch('http://localhost:8000/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
+    fetch('http://${import.meta.env.VITE_API_BASE}/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   },
   methods: {
@@ -642,7 +642,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://localhost:8000/notifications?role=${role}`
+        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -658,7 +658,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://localhost:8000/notifications/mark-read', {
+      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -675,7 +675,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://localhost:8000/notifications', {
+      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -711,8 +711,8 @@ export default {
           ? `?doctor=${encodeURIComponent(user.name.replace(/^Dr\.\s*/i, ''))}`
           : ''
         const [pRes, aRes] = await Promise.all([
-          fetch(`http://localhost:8000/patients/${id}`),
-          fetch(`http://localhost:8000/appointments${doctorParam}`),
+          fetch(`http://${import.meta.env.VITE_API_BASE}/patients/${id}`),
+          fetch(`http://${import.meta.env.VITE_API_BASE}/appointments${doctorParam}`),
         ])
         this.patient = await pRes.json()
         const allAppts = await aRes.json()
@@ -739,7 +739,7 @@ export default {
         const doctorParam = role !== 'admin' && user.name
           ? `&doctor=${encodeURIComponent(user.name.replace(/^Dr\.\s*/i, ''))}`
           : ''
-        const res = await fetch(`http://localhost:8000/prescriptions?patient_id=${this.patient.id}${doctorParam}`)
+        const res = await fetch(`http://${import.meta.env.VITE_API_BASE}/prescriptions?patient_id=${this.patient.id}${doctorParam}`)
         this.prescriptions = await res.json()
       } catch (err) {
         console.error('Failed to load prescriptions:', err)
@@ -777,7 +777,7 @@ export default {
         const today = new Date().toISOString().slice(0, 10)
         await Promise.all(
           filled.map(med =>
-            fetch('http://localhost:8000/prescriptions', {
+            fetch('http://${import.meta.env.VITE_API_BASE}/prescriptions', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

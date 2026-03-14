@@ -584,7 +584,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://localhost:8000/notifications?role=${role}`
+        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -600,7 +600,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://localhost:8000/notifications/mark-read', {
+      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -617,7 +617,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://localhost:8000/notifications', {
+      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -649,7 +649,7 @@ export default {
       try {
         const user = JSON.parse(localStorage.getItem('user') || '{}')
         if (!user.doctor_id) return
-        const res = await fetch(`http://localhost:8000/doctor-permissions/${user.doctor_id}`)
+        const res = await fetch(`http://${import.meta.env.VITE_API_BASE}/doctor-permissions/${user.doctor_id}`)
         const data = await res.json()
         const updated = {}
         Object.keys(data).forEach(key => {
@@ -725,7 +725,7 @@ export default {
           scheduleTime: this.scheduled ? this.scheduleTime : null,
         }
 
-        const res  = await fetch('http://localhost:8000/sms-blast', {
+        const res  = await fetch('http://${import.meta.env.VITE_API_BASE}/sms-blast', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -777,7 +777,7 @@ export default {
     async fetchPatients() {
       this.loadingPatients = true
       try {
-        const res = await fetch('http://localhost:8000/patients')
+        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/patients')
         this.patients = await res.json()
       } catch (err) {
         console.error('Failed to fetch patients:', err)
@@ -787,7 +787,7 @@ export default {
     },
     async fetchHistory() {
       try {
-        const res = await fetch('http://localhost:8000/sms-blast/history')
+        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/sms-blast/history')
         if (res.ok) this.history = await res.json()
       } catch (err) {
         // History is optional; silently ignore
@@ -812,7 +812,7 @@ export default {
     this.fetchHistory()
     this.startPermPolling()
     this.fetchNotifications()
-    fetch('http://localhost:8000/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
+    fetch('http://${import.meta.env.VITE_API_BASE}/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   },
   beforeUnmount() {
