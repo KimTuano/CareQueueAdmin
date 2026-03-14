@@ -513,7 +513,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
+        let url = `http://https://carequeue-admin.com/api/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -529,7 +529,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
+      await fetch('http://https://carequeue-admin.com/api/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -546,7 +546,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
+      await fetch('http://https://carequeue-admin.com/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -581,9 +581,9 @@ export default {
       this.loadingData = true
       try {
         const [dRes, pRes, aRes] = await Promise.all([
-          fetch('http://${import.meta.env.VITE_API_BASE}/doctors'),
-          fetch('http://${import.meta.env.VITE_API_BASE}/patients'),
-          fetch('http://${import.meta.env.VITE_API_BASE}/appointments'),
+          fetch('http://https://carequeue-admin.com/api/doctors'),
+          fetch('http://https://carequeue-admin.com/api/patients'),
+          fetch('http://https://carequeue-admin.com/api/appointments'),
         ])
         this.doctors      = await dRes.json()
         this.patients     = await pRes.json()
@@ -601,7 +601,7 @@ export default {
       this.loadingMonthly = true
       try {
         const res = await fetch(
-          `http://${import.meta.env.VITE_API_BASE}/appointments/monthly?year=${this.monthlyYear}&month=${this.monthlyMonth}`
+          `http://https://carequeue-admin.com/api/appointments/monthly?year=${this.monthlyYear}&month=${this.monthlyMonth}`
         )
         const data = await res.json()
         this.monthlyDays = data.days || []

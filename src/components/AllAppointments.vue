@@ -350,7 +350,7 @@
 </template>
 
 <script>
-const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://${import.meta.env.VITE_API_BASE}'
+const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://https://carequeue-admin.com/api'
 
 export default {
   name: 'AllAppointments',
@@ -420,7 +420,7 @@ export default {
     if (this.canAccess) this.fetchAppointments()
     this.fetchNotifications()
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
-    fetch('http://${import.meta.env.VITE_API_BASE}/doctors').then(r => r.json()).then(d => { this.doctors = d }).catch(() => {})
+    fetch('http://https://carequeue-admin.com/api/doctors').then(r => r.json()).then(d => { this.doctors = d }).catch(() => {})
   },
 
   methods: {
@@ -430,7 +430,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
+        let url = `http://https://carequeue-admin.com/api/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -446,7 +446,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
+      await fetch('http://https://carequeue-admin.com/api/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -463,7 +463,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
+      await fetch('http://https://carequeue-admin.com/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

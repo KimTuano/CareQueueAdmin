@@ -194,7 +194,7 @@ export default {
       this.errorMessage = ''
       this.loading = true
       try {
-        const response = await axios.post('http://${import.meta.env.VITE_API_BASE}/login', this.login)
+        const response = await axios.post('http://https://carequeue-admin.com/api/login', this.login)
         const { user, role } = response.data
         localStorage.setItem('user', JSON.stringify(user))
         localStorage.setItem('role', role)

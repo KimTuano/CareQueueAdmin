@@ -264,7 +264,7 @@
           <div v-else-if="fetchError && patients.length === 0" class="error-state">
             <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
             <p class="error-state-title">Cannot connect to server</p>
-            <p class="error-state-sub">Make sure your backend is running on <strong>http://${import.meta.env.VITE_API_BASE}</strong></p>
+            <p class="error-state-sub">Make sure your backend is running on <strong>http://https://carequeue-admin.com/api</strong></p>
             <button class="teal-btn" @click="fetchAll" style="margin-top:8px;">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
               Try Again
@@ -367,7 +367,7 @@
 </template>
 
 <script>
-const API = 'http://${import.meta.env.VITE_API_BASE}'
+const API = 'http://https://carequeue-admin.com/api'
 
 export default {
   name: 'Patients',
@@ -444,7 +444,7 @@ export default {
   mounted() {
     this.fetchAll()
     this.fetchNotifications()
-    fetch('http://${import.meta.env.VITE_API_BASE}/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
+    fetch('http://https://carequeue-admin.com/api/doctors').then(r=>r.json()).then(d=>{this.doctors=d}).catch(()=>{})
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   },
   methods: {
@@ -454,7 +454,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
+        let url = `http://https://carequeue-admin.com/api/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -470,7 +470,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
+      await fetch('http://https://carequeue-admin.com/api/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -487,7 +487,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
+      await fetch('http://https://carequeue-admin.com/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -72,7 +72,7 @@ export default {
       this.errorMsg = ''
       const currentUser = JSON.parse(localStorage.getItem('user'))
 
-      axios.put('http://${import.meta.env.VITE_API_BASE}/update-profile', {
+      axios.put('http://https://carequeue-admin.com/api/update-profile', {
         currentEmail: currentUser.email,
         name: this.form.name,
         email: this.form.email,

@@ -500,7 +500,7 @@
         <div class="modal-body" v-if="selectedDoctor">
           <div class="view-profile">
             <div class="view-avatar">
-              <img v-if="selectedDoctor.photo_url" :src="'http://${import.meta.env.VITE_API_BASE}' + selectedDoctor.photo_url" alt="Profile" />
+              <img v-if="selectedDoctor.photo_url" :src="'http://https://carequeue-admin.com/api' + selectedDoctor.photo_url" alt="Profile" />
               <svg v-else xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             </div>
             <div class="view-name-block">
@@ -548,7 +548,7 @@
         <div class="modal-body" v-if="accountTargetDoctor">
           <div class="account-summary">
             <div class="account-summary-avatar">
-              <img v-if="accountTargetDoctor.photo_url" :src="'http://${import.meta.env.VITE_API_BASE}' + accountTargetDoctor.photo_url" alt="Profile"/>
+              <img v-if="accountTargetDoctor.photo_url" :src="'http://https://carequeue-admin.com/api' + accountTargetDoctor.photo_url" alt="Profile"/>
               <svg v-else xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             </div>
             <div>
@@ -862,7 +862,7 @@ export default {
       try {
         const role = localStorage.getItem('role')
         const user = JSON.parse(localStorage.getItem('user')) || {}
-        let url = `http://${import.meta.env.VITE_API_BASE}/notifications?role=${role}`
+        let url = `http://https://carequeue-admin.com/api/notifications?role=${role}`
         if (role === 'doctor' && user.name) url += `&doctor=${encodeURIComponent(user.name)}`
         const res = await fetch(url)
         const data = await res.json()
@@ -878,7 +878,7 @@ export default {
     async markAllRead() {
       const role = localStorage.getItem('role')
       const user = JSON.parse(localStorage.getItem('user')) || {}
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications/mark-read', {
+      await fetch('http://https://carequeue-admin.com/api/notifications/mark-read', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, doctor: user.name })
@@ -895,7 +895,7 @@ export default {
 
     async sendNotif() {
       if (!this.notifForm.title || !this.notifForm.body) return
-      await fetch('http://${import.meta.env.VITE_API_BASE}/notifications', {
+      await fetch('http://https://carequeue-admin.com/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -967,7 +967,7 @@ export default {
         const formData = new FormData()
         Object.keys(this.newDoctor).forEach(k => formData.append(k, this.newDoctor[k]))
         if (this.photoFile) formData.append('photo', this.photoFile)
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/doctors', { method: 'POST', body: formData })
+        const res = await fetch('http://https://carequeue-admin.com/api/doctors', { method: 'POST', body: formData })
         const data = await res.json()
         if (!res.ok) throw new Error(data.message || 'Failed to add doctor.')
         this.doctors.unshift({ ...data.doctor, has_account: false })
@@ -1016,7 +1016,7 @@ export default {
     async saveAccount() {
       this.accountError = ''; this.savingAccount = true
       try {
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/doctor-accounts', {
+        const res = await fetch('http://https://carequeue-admin.com/api/doctor-accounts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ doctor_id: this.accountTargetDoctor.id, username: this.generatedUsername, password: this.generatedPassword })
@@ -1039,7 +1039,7 @@ export default {
       if (!this.newSpecialization.trim()) { this.addSpecError = 'Name is required.'; return }
       this.savingSpec = true
       try {
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/specializations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: this.newSpecialization.trim() }) })
+        const res = await fetch('http://https://carequeue-admin.com/api/specializations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: this.newSpecialization.trim() }) })
         const data = await res.json()
         if (!res.ok) throw new Error(data.message || 'Failed.')
         this.specializationList.push(data.specialization)
@@ -1054,7 +1054,7 @@ export default {
       if (!this.newHospital.trim()) { this.addHospError = 'Name is required.'; return }
       this.savingHosp = true
       try {
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/hospitals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: this.newHospital.trim() }) })
+        const res = await fetch('http://https://carequeue-admin.com/api/hospitals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: this.newHospital.trim() }) })
         const data = await res.json()
         if (!res.ok) throw new Error(data.message || 'Failed.')
         this.hospitalList.push(data.hospital)
@@ -1070,7 +1070,7 @@ export default {
       if (!this.newOffice.trim()) { this.addOfficeError = 'Office/Room name is required.'; return }
       this.savingOffice = true
       try {
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/offices', {
+        const res = await fetch('http://https://carequeue-admin.com/api/offices', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: this.newOffice.trim() })
@@ -1085,7 +1085,7 @@ export default {
     },
 
     async fetchOffices() {
-      try { this.officeList = await (await fetch('http://${import.meta.env.VITE_API_BASE}/offices')).json() }
+      try { this.officeList = await (await fetch('http://https://carequeue-admin.com/api/offices')).json() }
       catch (err) { console.error('Failed to fetch offices:', err) }
     },
 
@@ -1115,7 +1115,7 @@ export default {
       try {
         const formData = new FormData()
         formData.append('file', this.importFile)
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/doctors/import', { method: 'POST', body: formData })
+        const res = await fetch('http://https://carequeue-admin.com/api/doctors/import', { method: 'POST', body: formData })
         const data = await res.json()
         if (!res.ok) throw new Error(data.message || 'Import failed.')
         await this.fetchDoctors()
@@ -1136,19 +1136,19 @@ export default {
     async fetchDoctors() {
       this.loading = true
       try {
-        const res = await fetch('http://${import.meta.env.VITE_API_BASE}/doctors')
+        const res = await fetch('http://https://carequeue-admin.com/api/doctors')
         this.doctors = await res.json()
       } catch (err) { console.error('Failed to fetch doctors:', err) }
       finally { this.loading = false }
     },
 
     async fetchHospitals() {
-      try { this.hospitalList = await (await fetch('http://${import.meta.env.VITE_API_BASE}/hospitals')).json() }
+      try { this.hospitalList = await (await fetch('http://https://carequeue-admin.com/api/hospitals')).json() }
       catch (err) { console.error('Failed to fetch hospitals:', err) }
     },
 
     async fetchSpecializations() {
-      try { this.specializationList = await (await fetch('http://${import.meta.env.VITE_API_BASE}/specializations')).json() }
+      try { this.specializationList = await (await fetch('http://https://carequeue-admin.com/api/specializations')).json() }
       catch (err) { console.error('Failed to fetch specializations:', err) }
     },
 
