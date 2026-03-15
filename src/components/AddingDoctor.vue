@@ -1,9 +1,9 @@
 <template>
   <div class="layout">
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          FULL-SCREEN IMPORT LOADING OVERLAY
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <transition name="fade-overlay">
       <div v-if="showImportLoading" class="import-loading-overlay">
         <div class="import-loading-box">
@@ -28,7 +28,7 @@
       </div>
     </transition>
 
-    <!-- ── TOAST: Doctor Added ── -->
+    <!-- == TOAST: Doctor Added == -->
     <transition name="toast">
       <div v-if="showSuccess" class="toast toast-green">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -36,7 +36,7 @@
       </div>
     </transition>
 
-    <!-- ── TOAST: Account Created ── -->
+    <!-- == TOAST: Account Created == -->
     <transition name="toast">
       <div v-if="showAccountCreated" class="toast toast-blue">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -44,17 +44,17 @@
       </div>
     </transition>
 
-    <!-- ── TOAST: Create Account Prompt ── -->
+    <!-- == TOAST: Create Account Prompt == -->
     <transition name="toast">
       <div v-if="showCreatePrompt" class="toast toast-orange">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span>Doctor info saved! Create a system account?</span>
         <button class="toast-action-btn" @click="openCreateAccountFromPrompt">Create</button>
-        <button class="toast-dismiss" @click="showCreatePrompt = false">✕</button>
+        <button class="toast-dismiss" @click="showCreatePrompt = false">&times;</button>
       </div>
     </transition>
 
-    <!-- ── SIDEBAR ── -->
+    <!-- == SIDEBAR == -->
     <aside :class="['sidebar', { collapsed: sidebarCollapsed }]">
       <div class="sidebar-logo">
         <img src="../assets/CareQueueLogo.svg" alt="CareQueue" class="sidebar-logo-img" />
@@ -107,7 +107,7 @@
       </nav>
     </aside>
 
-    <!-- ── MAIN ── -->
+    <!-- == MAIN == -->
     <div class="main-wrapper">
       <header class="topbar">
         <div class="topbar-left">
@@ -212,7 +212,7 @@
                 <button class="search-btn"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
               </div>
 
-              <!-- ✅ NEW: Hospital Filter Dropdown -->
+              <!--  NEW: Hospital Filter Dropdown -->
               <div class="filter-select-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="filter-select-icon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 <select v-model="filterHospital" class="filter-select">
@@ -221,7 +221,7 @@
                 </select>
               </div>
 
-              <!-- ✅ NEW: No Account Filter Toggle Button -->
+              <!--  NEW: No Account Filter Toggle Button -->
               <button
                 class="btn-filter-no-account"
                 :class="{ active: filterNoAccount }"
@@ -235,7 +235,7 @@
                 <span v-if="filterNoAccount" class="filter-active-dot"></span>
               </button>
 
-              <!-- ✅ Active filter indicator -->
+              <!--  Active filter indicator -->
               <button v-if="filterNoAccount || filterHospital" class="btn-clear-filters" @click="clearFilters" title="Clear all filters">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 Clear
@@ -254,19 +254,19 @@
             </div>
           </div>
 
-          <!-- ✅ Active filter summary bar -->
+          <!--  Active filter summary bar -->
           <div v-if="filterNoAccount || filterHospital" class="filter-summary-bar">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
             <span>Filtering:</span>
             <span v-if="filterNoAccount" class="filter-chip no-acct-chip">
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
               No Account
-              <button @click="filterNoAccount = false">✕</button>
+              <button @click="filterNoAccount = false">&times;</button>
             </span>
             <span v-if="filterHospital" class="filter-chip hosp-chip">
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/></svg>
               {{ filterHospital }}
-              <button @click="filterHospital = ''">✕</button>
+              <button @click="filterHospital = ''">&times;</button>
             </span>
             <span class="filter-result-count">{{ searchedDoctors.length }} result{{ searchedDoctors.length !== 1 ? 's' : '' }}</span>
           </div>
@@ -317,6 +317,14 @@
                       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                       View
                     </button>
+                    <button class="btn-edit" @click="editDoctor(doctor)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      Edit
+                    </button>
+                    <button class="btn-delete" @click="confirmDelete(doctor)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      Delete
+                    </button>
                     <button class="btn-create-acct" :class="{ 'done': doctor.has_account }" @click="!doctor.has_account && openCreateAccount(doctor)" :disabled="doctor.has_account">
                       <svg v-if="!doctor.has_account" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                       <svg v-else xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -328,13 +336,13 @@
             </tbody>
           </table>
 
-          <!-- ══ SMART PAGINATION ══ -->
+          <!-- == SMART PAGINATION == -->
           <div class="pagination" v-if="totalPages > 1">
             <button class="page-btn nav-arrow-btn" :disabled="currentPage === 1" @click="currentPage--">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             </button>
             <template v-for="(item, idx) in paginationItems" :key="idx">
-              <span v-if="item === '...'" class="page-ellipsis">…</span>
+              <span v-if="item === '...'" class="page-ellipsis">...</span>
               <button
                 v-else
                 class="page-btn"
@@ -350,14 +358,14 @@
       </main>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          ADD DOCTOR MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showAddModal" @click.self="closeAddModal">
       <div class="modal modal-large">
         <div class="modal-header">
           <h3>Add Doctor</h3>
-          <button class="modal-close" @click="closeAddModal">✕</button>
+          <button class="modal-close" @click="closeAddModal">&times;</button>
         </div>
         <div class="modal-body">
           <div class="photo-section">
@@ -408,7 +416,7 @@
               </div>
             </div>
 
-            <!-- ✅ UPDATED: Office / Room now uses dropdown + add button -->
+            <!--  UPDATED: Office / Room now uses dropdown + add button -->
             <div class="field-group">
               <label>Office / Room <span class="required">*</span></label>
               <div class="select-with-add">
@@ -434,12 +442,12 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          ADD SPECIALIZATION MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showAddSpecModal" @click.self="showAddSpecModal = false">
       <div class="modal modal-sm">
-        <div class="modal-header"><h3>Add Specialization</h3><button class="modal-close" @click="showAddSpecModal = false">✕</button></div>
+        <div class="modal-header"><h3>Add Specialization</h3><button class="modal-close" @click="showAddSpecModal = false">&times;</button></div>
         <div class="modal-body">
           <div class="field-group"><label>Specialization Name <span class="required">*</span></label><input type="text" v-model="newSpecialization" placeholder="e.g. Dermatologist" /></div>
           <p v-if="addSpecError" class="error-msg">{{ addSpecError }}</p>
@@ -451,12 +459,12 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          ADD HOSPITAL MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showAddHospModal" @click.self="showAddHospModal = false">
       <div class="modal modal-sm">
-        <div class="modal-header"><h3>Add Hospital / Clinic</h3><button class="modal-close" @click="showAddHospModal = false">✕</button></div>
+        <div class="modal-header"><h3>Add Hospital / Clinic</h3><button class="modal-close" @click="showAddHospModal = false">&times;</button></div>
         <div class="modal-body">
           <div class="field-group"><label>Hospital / Clinic Name <span class="required">*</span></label><input type="text" v-model="newHospital" placeholder="e.g. City General Hospital" /></div>
           <p v-if="addHospError" class="error-msg">{{ addHospError }}</p>
@@ -468,14 +476,14 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
-         ✅ NEW: ADD OFFICE / ROOM MODAL
-    ══════════════════════════════════════════ -->
+    <!-- ==========================================
+          NEW: ADD OFFICE / ROOM MODAL
+    ========================================== -->
     <div class="modal-overlay" v-if="showAddOfficeModal" @click.self="showAddOfficeModal = false">
       <div class="modal modal-sm">
         <div class="modal-header">
           <h3>Add Office / Room</h3>
-          <button class="modal-close" @click="showAddOfficeModal = false">✕</button>
+          <button class="modal-close" @click="showAddOfficeModal = false">&times;</button>
         </div>
         <div class="modal-body">
           <div class="field-group">
@@ -491,12 +499,73 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
+         EDIT DOCTOR MODAL
+    ========================================== -->
+    <div class="modal-overlay" v-if="showEditModal" @click.self="showEditModal = false">
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>Edit Doctor</h3>
+          <button class="modal-close" @click="showEditModal = false">&times;</button>
+        </div>
+        <div class="modal-body" v-if="editForm">
+          <div class="edit-grid">
+            <div class="field-group"><label>First Name <span class="required">*</span></label><input type="text" v-model="editForm.first_name" /></div>
+            <div class="field-group"><label>Middle Name</label><input type="text" v-model="editForm.middle_name" /></div>
+            <div class="field-group"><label>Last Name <span class="required">*</span></label><input type="text" v-model="editForm.last_name" /></div>
+            <div class="field-group"><label>Name Extension</label><input type="text" v-model="editForm.name_extension" placeholder="Jr., Sr., III" /></div>
+            <div class="field-group"><label>Gender</label><select v-model="editForm.gender"><option value="">- Select -</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+            <div class="field-group"><label>Date of Birth</label><input type="date" v-model="editForm.date_of_birth" /></div>
+            <div class="field-group"><label>Mobile <span class="required">*</span></label><input type="text" v-model="editForm.mobile" /></div>
+            <div class="field-group"><label>Landline</label><input type="text" v-model="editForm.landline" /></div>
+            <div class="field-group"><label>Email</label><input type="email" v-model="editForm.email" /></div>
+            <div class="field-group"><label>Religion</label><input type="text" v-model="editForm.religion" /></div>
+            <div class="field-group"><label>Civil Status</label><select v-model="editForm.civil_status"><option value="">- Select -</option><option>Single</option><option>Married</option><option>Widowed</option><option>Separated</option></select></div>
+            <div class="field-group"><label>Address</label><input type="text" v-model="editForm.address" /></div>
+            <div class="field-group"><label>Specialization</label><input type="text" v-model="editForm.specialization" /></div>
+            <div class="field-group"><label>Sub-Specialization</label><input type="text" v-model="editForm.sub_specialization" /></div>
+            <div class="field-group"><label>Hospital / Clinic</label><select v-model="editForm.hospital"><option value="">- Select -</option><option v-for="h in hospitalList" :key="h.id" :value="h.name">{{ h.name }}</option></select></div>
+            <div class="field-group"><label>Office / Room</label><select v-model="editForm.office"><option value="">- Select -</option><option v-for="o in officeList" :key="o.id" :value="o.name">{{ o.name }}</option></select></div>
+            <div class="field-group"><label>License No.</label><input type="text" v-model="editForm.license_number" /></div>
+            <div class="field-group"><label>Years of Experience</label><input type="number" v-model="editForm.years_experience" min="0" /></div>
+            <div class="field-group"><label>Medical School</label><input type="text" v-model="editForm.medical_school" /></div>
+            <div class="field-group"><label>Status</label><select v-model="editForm.status"><option value="IN">IN</option><option value="OUT">OUT</option></select></div>
+          </div>
+          <p v-if="editError" class="error-msg">{{ editError }}</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showEditModal = false">Cancel</button>
+          <button class="btn-add-confirm" @click="saveEdit" :disabled="editSaving">{{ editSaving ? 'Saving...' : 'Save Changes' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         DELETE CONFIRM MODAL
+    ========================================== -->
+    <div class="modal-overlay" v-if="showDeleteModal" @click.self="showDeleteModal = false">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div class="modal-header-icon" style="background:#fef2f2;color:#ef4444"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div>
+          <div class="modal-header-text"><h3>Delete Doctor</h3><p class="modal-subtitle">This action cannot be undone.</p></div>
+          <button class="modal-close" @click="showDeleteModal = false">&times;</button>
+        </div>
+        <div class="modal-body" v-if="deleteTarget">
+          <p class="delete-confirm-msg">Are you sure you want to delete <strong>Dr. {{ deleteTarget.first_name }} {{ deleteTarget.last_name }}</strong>? All associated data will be permanently removed.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showDeleteModal = false">Cancel</button>
+          <button class="btn-delete-confirm" @click="deleteDoctor" :disabled="deleteSaving">{{ deleteSaving ? 'Deleting...' : 'Yes, Delete' }}</button>
+        </div>
+      </div>
+    </div>
+
+        <!-- ==========================================
          VIEW DOCTOR MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showViewModal" @click.self="showViewModal = false">
       <div class="modal modal-large">
-        <div class="modal-header"><h3>Doctor Information</h3><button class="modal-close" @click="showViewModal = false">✕</button></div>
+        <div class="modal-header"><h3>Doctor Information</h3><button class="modal-close" @click="showViewModal = false">&times;</button></div>
         <div class="modal-body" v-if="selectedDoctor">
           <div class="view-profile">
             <div class="view-avatar">
@@ -505,7 +574,7 @@
             </div>
             <div class="view-name-block">
               <h2 class="view-doctor-name">Dr. {{ selectedDoctor.first_name }} {{ selectedDoctor.middle_name }} {{ selectedDoctor.last_name }} {{ selectedDoctor.name_extension }}</h2>
-              <p class="view-spec">{{ selectedDoctor.specialization }}<span v-if="selectedDoctor.sub_specialization"> · {{ selectedDoctor.sub_specialization }}</span></p>
+              <p class="view-spec">{{ selectedDoctor.specialization }}<span v-if="selectedDoctor.sub_specialization"> &middot; {{ selectedDoctor.sub_specialization }}</span></p>
               <span :class="['status-badge', selectedDoctor.status === 'IN' ? 'in' : 'out']">{{ selectedDoctor.status }}</span>
             </div>
           </div>
@@ -515,23 +584,23 @@
               <div class="view-row"><span class="view-label">Doctor ID</span><span class="view-value">{{ selectedDoctor.doctor_id }}</span></div>
               <div class="view-row"><span class="view-label">Gender</span><span class="view-value">{{ selectedDoctor.gender }}</span></div>
               <div class="view-row"><span class="view-label">Date of Birth</span><span class="view-value">{{ formatDate(selectedDoctor.date_of_birth) }}</span></div>
-              <div class="view-row"><span class="view-label">Religion</span><span class="view-value">{{ selectedDoctor.religion || '—' }}</span></div>
-              <div class="view-row"><span class="view-label">Civil Status</span><span class="view-value">{{ selectedDoctor.civil_status || '—' }}</span></div>
+              <div class="view-row"><span class="view-label">Religion</span><span class="view-value">{{ selectedDoctor.religion || '-' }}</span></div>
+              <div class="view-row"><span class="view-label">Civil Status</span><span class="view-value">{{ selectedDoctor.civil_status || '-' }}</span></div>
             </div>
             <div class="view-section">
               <div class="view-section-title">Contact Information</div>
               <div class="view-row"><span class="view-label">Mobile</span><span class="view-value">{{ selectedDoctor.mobile }}</span></div>
-              <div class="view-row"><span class="view-label">Landline</span><span class="view-value">{{ selectedDoctor.landline || '—' }}</span></div>
-              <div class="view-row"><span class="view-label">Email</span><span class="view-value">{{ selectedDoctor.email || '—' }}</span></div>
-              <div class="view-row"><span class="view-label">Address</span><span class="view-value">{{ selectedDoctor.address || '—' }}</span></div>
+              <div class="view-row"><span class="view-label">Landline</span><span class="view-value">{{ selectedDoctor.landline || '-' }}</span></div>
+              <div class="view-row"><span class="view-label">Email</span><span class="view-value">{{ selectedDoctor.email || '-' }}</span></div>
+              <div class="view-row"><span class="view-label">Address</span><span class="view-value">{{ selectedDoctor.address || '-' }}</span></div>
             </div>
             <div class="view-section span-full">
               <div class="view-section-title">Professional Information</div>
               <div class="view-row"><span class="view-label">Hospital / Clinic</span><span class="view-value">{{ selectedDoctor.hospital }}</span></div>
               <div class="view-row"><span class="view-label">Office / Room</span><span class="view-value">{{ selectedDoctor.office }}</span></div>
-              <div class="view-row"><span class="view-label">License No.</span><span class="view-value">{{ selectedDoctor.license_number || '—' }}</span></div>
-              <div class="view-row"><span class="view-label">Experience</span><span class="view-value">{{ selectedDoctor.years_experience ? selectedDoctor.years_experience + ' years' : '—' }}</span></div>
-              <div class="view-row"><span class="view-label">Medical School</span><span class="view-value">{{ selectedDoctor.medical_school || '—' }}</span></div>
+              <div class="view-row"><span class="view-label">License No.</span><span class="view-value">{{ selectedDoctor.license_number || '-' }}</span></div>
+              <div class="view-row"><span class="view-label">Experience</span><span class="view-value">{{ selectedDoctor.years_experience ? selectedDoctor.years_experience + ' years' : '-' }}</span></div>
+              <div class="view-row"><span class="view-label">Medical School</span><span class="view-value">{{ selectedDoctor.medical_school || '-' }}</span></div>
             </div>
           </div>
         </div>
@@ -539,12 +608,12 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          CREATE DOCTOR ACCOUNT MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showAccountModal" @click.self="showAccountModal = false">
       <div class="modal">
-        <div class="modal-header"><h3>Create Doctor Account</h3><button class="modal-close" @click="showAccountModal = false">✕</button></div>
+        <div class="modal-header"><h3>Create Doctor Account</h3><button class="modal-close" @click="showAccountModal = false">&times;</button></div>
         <div class="modal-body" v-if="accountTargetDoctor">
           <div class="account-summary">
             <div class="account-summary-avatar">
@@ -553,7 +622,7 @@
             </div>
             <div>
               <p class="account-summary-name">Dr. {{ accountTargetDoctor.first_name }} {{ accountTargetDoctor.last_name }}</p>
-              <p class="account-summary-sub">{{ accountTargetDoctor.specialization }} · {{ accountTargetDoctor.hospital }}</p>
+              <p class="account-summary-sub">{{ accountTargetDoctor.specialization }} &middot; {{ accountTargetDoctor.hospital }}</p>
             </div>
           </div>
           <div class="section-title">Generated Credentials</div>
@@ -586,14 +655,14 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          IMPORT FILE MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showImportModal" @click.self="showImportModal = false">
       <div class="modal">
         <div class="modal-header">
           <h3>Import Doctors List</h3>
-          <button class="modal-close" @click="showImportModal = false">✕</button>
+          <button class="modal-close" @click="showImportModal = false">&times;</button>
         </div>
         <div class="modal-body">
           <div class="drop-zone" :class="{ 'drag-over': isDragOver }" @dragover.prevent="isDragOver = true" @dragleave="isDragOver = false" @drop.prevent="handleDrop">
@@ -605,7 +674,7 @@
           <div v-if="importFile" class="import-file-info">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span>{{ importFile.name }}</span>
-            <button class="btn-remove-file" @click="importFile = null">✕</button>
+            <button class="btn-remove-file" @click="importFile = null">&times;</button>
           </div>
           <div class="import-status-notice">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -626,9 +695,9 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
+    <!-- ==========================================
          IMPORT SUCCESS RESULT MODAL
-    ══════════════════════════════════════════ -->
+    ========================================== -->
     <div class="modal-overlay" v-if="showImportResult" @click.self="showImportResult = false">
       <div class="modal modal-result">
         <div class="modal-body" style="gap: 0; padding: 0;">
@@ -696,11 +765,26 @@
               <li v-if="importResultErrors.length > 5" class="more-errors">...and {{ importResultErrors.length - 5 }} more</li>
             </ul>
           </div>
+          <!-- Bulk create progress -->
+          <div v-if="bulkCreating || bulkDone" class="bulk-progress-wrap">
+            <div v-if="bulkCreating" class="bulk-progress-bar-wrap">
+              <div class="bulk-progress-bar" :style="{ width: (bulkCreatedCount / importResultCount * 100) + '%' }"></div>
+            </div>
+            <p v-if="bulkCreating" class="bulk-progress-text">Creating accounts... {{ bulkCreatedCount }} / {{ importResultCount }}</p>
+            <p v-if="bulkDone" class="bulk-done-text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              All {{ bulkCreatedCount }} accounts created successfully!
+            </p>
+          </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn-add-confirm btn-full" @click="showImportResult = false">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            Got it — Start Creating Accounts
+        <div class="modal-footer" style="flex-direction: column; gap: 10px;">
+          <button v-if="!bulkDone" class="btn-add-confirm btn-full" @click="bulkCreateAccounts" :disabled="bulkCreating">
+            <svg v-if="!bulkCreating" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="spin"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            {{ bulkCreating ? 'Creating All Accounts...' : 'Create All Accounts Automatically' }}
+          </button>
+          <button class="btn-cancel btn-full" @click="closeImportResult" style="margin:0;">
+            {{ bulkDone ? '&#10003; Done - Close' : 'Got it - Start Creating Accounts Manually' }}
           </button>
         </div>
       </div>
@@ -739,7 +823,7 @@ export default {
       loading: false,
       saving: false,
 
-      // ✅ NEW: Filter state
+      //  NEW: Filter state
       filterNoAccount: false,
       filterHospital: '',
 
@@ -768,7 +852,7 @@ export default {
       addHospError: '',
       savingHosp: false,
 
-      // ✅ NEW: Add Office/Room mini-modal
+      //  NEW: Add Office/Room mini-modal
       showAddOfficeModal: false,
       newOffice: '',
       addOfficeError: '',
@@ -777,6 +861,13 @@ export default {
       // View Modal
       showViewModal: false,
       selectedDoctor: null,
+      showEditModal: false,
+      editForm: null,
+      editError: '',
+      editSaving: false,
+      showDeleteModal: false,
+      deleteTarget: null,
+      deleteSaving: false,
 
       // Create Account Modal
       showAccountModal: false,
@@ -799,10 +890,15 @@ export default {
       importResultCount: 0,
       importResultErrors: [],
 
+      // Bulk create accounts
+      bulkCreating: false,
+      bulkCreatedCount: 0,
+      bulkDone: false,
+
       doctors: [],
       hospitalList: [],
       specializationList: [],
-      officeList: [],    // ✅ NEW
+      officeList: [],    //  NEW
       currentUser: JSON.parse(localStorage.getItem('user')) || { name: 'Admin', email: '' },
       livePerms: JSON.parse(localStorage.getItem('doctorPermissions') || '{}'),
     }
@@ -815,7 +911,7 @@ export default {
       let list = this.doctors
       if (this.searchName)    list = list.filter(d => `${d.first_name} ${d.last_name}`.toLowerCase().includes(this.searchName.toLowerCase()))
       if (this.searchId)      list = list.filter(d => (d.doctor_id || '').toString().toLowerCase().includes(this.searchId.toLowerCase()))
-      // ✅ NEW filters
+      //  NEW filters
       if (this.filterNoAccount) list = list.filter(d => !d.has_account)
       if (this.filterHospital)  list = list.filter(d => d.hospital === this.filterHospital)
       return list
@@ -921,7 +1017,7 @@ export default {
 
     doctorCan(key) { return !!this.livePerms[key] },
 
-    // ✅ NEW: Clear all filters
+    //  NEW: Clear all filters
     clearFilters() {
       this.filterNoAccount = false
       this.filterHospital  = ''
@@ -1032,7 +1128,37 @@ export default {
       finally { this.savingAccount = false }
     },
 
-    copyText(text) { navigator.clipboard.writeText(text).catch(() => {}) },
+    async bulkCreateAccounts() {
+      this.bulkCreating = true
+      this.bulkCreatedCount = 0
+      this.bulkDone = false
+      const pending = this.doctors.filter(d => !d.has_account)
+      for (const doctor of pending) {
+        try {
+          const username = (doctor.first_name.charAt(0) + doctor.last_name).toLowerCase().replace(/\s+/g, '') + Math.floor(100 + Math.random() * 900)
+          const password = this.randomPassword()
+          const res = await fetch('https://carequeue-admin.com/api/doctor-accounts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ doctor_id: doctor.id, username, password })
+          })
+          if (res.ok) {
+            const idx = this.doctors.findIndex(d => d.id === doctor.id)
+            if (idx !== -1) this.doctors[idx].has_account = true
+            this.bulkCreatedCount++
+          }
+        } catch (e) { /* skip failed ones */ }
+      }
+      this.bulkCreating = false
+      this.bulkDone = true
+    },
+
+    closeImportResult() {
+      this.showImportResult = false
+      this.bulkCreating = false
+      this.bulkDone = false
+      this.bulkCreatedCount = 0
+    },
 
     openAddSpecialization() { this.newSpecialization = ''; this.addSpecError = ''; this.showAddSpecModal = true },
     async saveSpecialization() {
@@ -1064,7 +1190,7 @@ export default {
       finally { this.savingHosp = false }
     },
 
-    // ✅ NEW: Office/Room methods
+    //  NEW: Office/Room methods
     openAddOffice() { this.newOffice = ''; this.addOfficeError = ''; this.showAddOfficeModal = true },
     async saveOffice() {
       if (!this.newOffice.trim()) { this.addOfficeError = 'Office/Room name is required.'; return }
@@ -1090,6 +1216,64 @@ export default {
     },
 
     viewDoctor(doctor) { this.selectedDoctor = doctor; this.showViewModal = true },
+
+    editDoctor(doctor) {
+      this.editForm = { ...doctor }
+      this.editError = ''
+      this.editSaving = false
+      this.showEditModal = true
+    },
+
+    async saveEdit() {
+      if (!this.editForm.first_name || !this.editForm.last_name || !this.editForm.mobile) {
+        this.editError = 'First name, last name, and mobile are required.'
+        return
+      }
+      this.editSaving = true
+      this.editError = ''
+      try {
+        const res = await fetch(`https://carequeue-admin.com/api/doctors/${this.editForm.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.editForm)
+        })
+        if (!res.ok) throw new Error('Failed to save changes.')
+        const idx = this.doctors.findIndex(d => d.id === this.editForm.id)
+        if (idx !== -1) this.doctors[idx] = { ...this.doctors[idx], ...this.editForm }
+        this.showEditModal = false
+        this.showSuccess = true
+        setTimeout(() => { this.showSuccess = false }, 3000)
+      } catch (err) {
+        this.editError = err.message
+      } finally {
+        this.editSaving = false
+      }
+    },
+
+    confirmDelete(doctor) {
+      this.deleteTarget = doctor
+      this.deleteSaving = false
+      this.showDeleteModal = true
+    },
+
+    async deleteDoctor() {
+      if (!this.deleteTarget) return
+      this.deleteSaving = true
+      try {
+        const res = await fetch(`https://carequeue-admin.com/api/doctors/${this.deleteTarget.id}`, {
+          method: 'DELETE'
+        })
+        if (!res.ok) throw new Error('Failed to delete doctor.')
+        this.doctors = this.doctors.filter(d => d.id !== this.deleteTarget.id)
+        this.showDeleteModal = false
+        this.showSuccess = true
+        setTimeout(() => { this.showSuccess = false }, 3000)
+      } catch (err) {
+        console.error('Failed to delete doctor.')
+      } finally {
+        this.deleteSaving = false
+      }
+    },
 
     triggerImport() { this.importFile = null; this.importError = ''; this.showImportModal = true },
     handleImport(event) {
@@ -1153,7 +1337,7 @@ export default {
     },
 
     formatDate(dateStr) {
-      if (!dateStr) return '—'
+      if (!dateStr) return '-'
       return new Date(dateStr).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
     },
     goTo(page) { this.accountOpen = false; if (page === 'edit-account') this.$router.push('/edit-profile') },
@@ -1167,7 +1351,7 @@ export default {
     this.fetchDoctors()
     this.fetchHospitals()
     this.fetchSpecializations()
-    this.fetchOffices()   // ✅ NEW
+    this.fetchOffices()   //  NEW
     this.fetchNotifications()
     this._notifPoll = setInterval(() => this.fetchNotifications(), 30000)
   }
@@ -1179,7 +1363,7 @@ export default {
 * { box-sizing: border-box; margin: 0; padding: 0; }
 .layout { display: flex; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; }
 
-/* ══ IMPORT LOADING OVERLAY ══ */
+/* == IMPORT LOADING OVERLAY == */
 .import-loading-overlay {
   position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75);
   display: flex; align-items: center; justify-content: center;
@@ -1205,7 +1389,7 @@ export default {
 .fade-overlay-enter-active, .fade-overlay-leave-active { transition: opacity 0.3s ease; }
 .fade-overlay-enter-from, .fade-overlay-leave-to { opacity: 0; }
 
-/* ── TOASTS ── */
+/* == TOASTS == */
 .toast {
   position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
   padding: 14px 22px; border-radius: 12px; font-size: 14px; font-weight: 600;
@@ -1220,7 +1404,7 @@ export default {
 .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(-16px); }
 
-/* ── SIDEBAR ── */
+/* == SIDEBAR == */
 .sidebar { width: 220px; min-height: 100vh; background: #1b2540; display: flex; flex-direction: column; transition: width 0.3s ease; overflow: hidden; flex-shrink: 0; }
 .sidebar.collapsed { width: 64px; }
 .sidebar.collapsed .nav-label, .sidebar.collapsed .nav-arrow, .sidebar.collapsed .nav-sub { display: none; }
@@ -1238,7 +1422,7 @@ export default {
 .nav-sub-item { display: block; padding: 9px 12px; color: #94a3b8; text-decoration: none; font-size: 13px; transition: color 0.2s; white-space: nowrap; }
 .nav-sub-item:hover, .nav-sub-item.active { color: #3aa6a6; }
 
-/* ── MAIN ── */
+/* == MAIN == */
 .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .topbar { height: 60px; background: #3aa6a6; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
 .hamburger { background: none; border: none; cursor: pointer; color: #fff; display: flex; padding: 6px; border-radius: 8px; transition: background 0.2s; }
@@ -1293,7 +1477,7 @@ export default {
 .role-pill.doctor { background: #d1fae5; color: #065f46; }
 .role-tag { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #3aa6a6; font-size: 12px; font-weight: 600; border-top: 1px solid rgba(255,255,255,0.06); margin-top: auto; }
 
-/* ── CONTENT ── */
+/* == CONTENT == */
 .content { padding: 28px; flex: 1; }
 .page-title { font-size: 22px; font-weight: 700; color: #1e293b; }
 .breadcrumb { font-size: 12px; color: #94a3b8; margin-top: 2px; }
@@ -1307,7 +1491,7 @@ export default {
 .search-input { padding: 8px 12px; border: none; outline: none; font-size: 13px; color: #475569; font-family: inherit; width: 150px; }
 .search-btn { padding: 8px 12px; background: #3aa6a6; border: none; cursor: pointer; color: white; display: flex; align-items: center; }
 
-/* ✅ NEW: Hospital filter dropdown */
+/*  NEW: Hospital filter dropdown */
 .filter-select-wrap {
   display: flex; align-items: center; gap: 6px;
   border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 0 10px 0 8px;
@@ -1320,7 +1504,7 @@ export default {
   font-family: inherit; background: transparent; cursor: pointer; min-width: 130px;
 }
 
-/* ✅ NEW: No Account filter button */
+/*  NEW: No Account filter button */
 .btn-filter-no-account {
   display: flex; align-items: center; gap: 6px; padding: 7px 14px;
   background: white; border: 1.5px solid #e2e8f0; border-radius: 8px;
@@ -1331,7 +1515,7 @@ export default {
 .btn-filter-no-account.active { border-color: #f59e0b; color: #92400e; background: #fef3c7; }
 .filter-active-dot { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; position: absolute; top: 5px; right: 5px; }
 
-/* ✅ NEW: Clear filters button */
+/*  NEW: Clear filters button */
 .btn-clear-filters {
   display: flex; align-items: center; gap: 5px; padding: 7px 12px;
   background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 8px;
@@ -1340,7 +1524,7 @@ export default {
 }
 .btn-clear-filters:hover { background: #fee2e2; }
 
-/* ✅ NEW: Filter summary bar */
+/*  NEW: Filter summary bar */
 .filter-summary-bar {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0;
@@ -1363,7 +1547,7 @@ export default {
 .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #3aa6a6; border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── TABLE ── */
+/* == TABLE == */
 .doctors-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .doctors-table th { text-align: center; padding: 12px 16px; color: #64748b; font-weight: 600; font-size: 13px; border-bottom: 2px solid #f1f5f9; }
 .doctors-table td { padding: 13px 16px; color: #475569; border-bottom: 1px solid #f1f5f9; text-align: center; }
@@ -1386,7 +1570,7 @@ export default {
 .empty-row { text-align: center; padding: 60px 0; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 12px; color: #94a3b8; }
 
-/* ══ SMART PAGINATION ══ */
+/* == SMART PAGINATION == */
 .pagination {
   display: flex; justify-content: center; align-items: center;
   gap: 4px; margin-top: 20px; padding-top: 16px;
@@ -1405,7 +1589,7 @@ export default {
 .nav-arrow-btn { padding: 0 10px; color: #64748b; }
 .page-ellipsis { min-width: 28px; height: 30px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: #94a3b8; user-select: none; letter-spacing: 1px; }
 
-/* ── MODALS ── */
+/* == MODALS == */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
 .modal { background: white; border-radius: 16px; width: 480px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; }
 .modal-large  { width: 760px; }
@@ -1552,6 +1736,15 @@ export default {
 .result-error-list li:last-child { border-bottom: none; }
 .more-errors { color: #94a3b8 !important; font-style: italic; }
 
+/* Bulk Create Accounts */
+.bulk-progress-wrap { margin: 0 24px 16px; }
+.bulk-progress-bar-wrap { height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+.bulk-progress-bar { height: 100%; background: linear-gradient(90deg, #3aa6a6, #2e8b8b); border-radius: 99px; transition: width 0.3s ease; }
+.bulk-progress-text { font-size: 13px; color: #475569; text-align: center; font-weight: 500; }
+.bulk-done-text { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: #16a34a; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 10px 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+
 @media (max-width: 768px) {
   .sidebar { position: fixed; z-index: 300; height: 100vh; }
   .content { padding: 16px; }
@@ -1568,4 +1761,17 @@ export default {
   .page-btn { min-width: 28px; height: 28px; font-size: 11px; }
   .filter-select-wrap { min-width: 140px; }
 }
+
+.btn-edit { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; background: #f0f4f8; color: #6366f1; border: 1.5px solid #6366f1; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+.btn-edit:hover { background: #6366f1; color: white; }
+.btn-delete { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; background: #f0f4f8; color: #ef4444; border: 1.5px solid #ef4444; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+.btn-delete:hover { background: #ef4444; color: white; }
+.btn-delete-confirm { display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+.btn-delete-confirm:hover { background: #dc2626; }
+.btn-delete-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+.edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.delete-confirm-msg { font-size: 14px; color: #475569; line-height: 1.6; }
+.modal-header-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.modal-header-text h3 { font-size: 16px; font-weight: 700; color: #1e293b; }
+.modal-subtitle { font-size: 12px; color: #94a3b8; margin-top: 2px; }
 </style>
