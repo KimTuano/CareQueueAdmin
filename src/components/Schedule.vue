@@ -314,6 +314,25 @@
               <button class="btn-today" @click="goToday">Today</button>
             </div>
 
+            <!-- Doctor search bar (admin only) -->
+            <div class="appt-doctor-filter" v-if="isAdmin">
+              <div class="appt-doctor-filter-input-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input
+                  class="appt-doctor-filter-input"
+                  type="text"
+                  placeholder="Filter by doctor name…"
+                  v-model="doctorFilterSearch"
+                />
+                <button v-if="doctorFilterSearch" class="avail-search-clear" @click="doctorFilterSearch = ''">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <span class="appt-doctor-filter-count" v-if="doctorFilterSearch">
+                {{ filteredSelectedDayAppts.length }} result{{ filteredSelectedDayAppts.length !== 1 ? 's' : '' }} for "{{ doctorFilterSearch }}"
+              </span>
+            </div>
+
             <div v-if="loading" class="loading-state">
               <div class="spinner"></div>
               <p>Loading schedule...</p>
@@ -337,7 +356,7 @@
 
             <div v-else class="appt-list">
               <div
-                v-for="appt in selectedDayAppts"
+                v-for="appt in filteredSelectedDayAppts"
                 :key="appt.id"
                 class="appt-card"
                 @click="viewAppt(appt)"
@@ -449,15 +468,98 @@
         <!-- body -->
         <div class="modal-body avail-body">
 
-          <!-- Doctor picker -->
+          <!-- ── SUMMARY VIEW (after save) ── -->
+          <template v-if="availModal.view === 'summary'">
+            <div class="avail-summary-view">
+              <div class="avail-summary-success">
+                <div class="avail-summary-success-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div>
+                  <p class="avail-summary-success-title">Schedule Saved!</p>
+                  <p class="avail-summary-success-sub">{{ availModal.doctorSearch }} · {{ availModal.hospital }}</p>
+                </div>
+                <button class="avail-summary-edit-btn" @click="availModal.view = 'edit'">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  Edit
+                </button>
+              </div>
+
+              <div class="avail-summary-days">
+                <div
+                  v-for="(label, idx) in availDayLabels"
+                  :key="idx"
+                  class="avail-summary-day-row"
+                  :class="{ empty: availSlotsForDay(idx).length === 0 }"
+                >
+                  <div class="avail-summary-day-label">
+                    <span class="avail-summary-day-name">{{ label }}</span>
+                    <span class="avail-summary-slot-count" :class="{ zero: availSlotsForDay(idx).length === 0 }">
+                      {{ availSlotsForDay(idx).length }} slot{{ availSlotsForDay(idx).length !== 1 ? 's' : '' }}
+                    </span>
+                  </div>
+                  <div class="avail-summary-slots" v-if="availSlotsForDay(idx).length > 0">
+                    <span
+                      v-for="slot in availSlotsForDay(idx).sort()"
+                      :key="slot"
+                      class="avail-summary-slot-chip"
+                    >{{ slot }}</span>
+                  </div>
+                  <div class="avail-summary-no-slots" v-else>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    No slots — unavailable
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ── EDIT VIEW ── -->
+          <template v-else>
+
+          <!-- Doctor picker with search -->
           <div class="avail-field-row">
             <label class="avail-label">Doctor</label>
-            <select class="avail-select" v-model="availModal.doctorId" @change="availModal.hospital = ''; availModal.selectedSlots = {}">
-              <option value="">— Select a doctor —</option>
-              <option v-for="d in doctors" :key="d.id" :value="d.id">
-                Dr. {{ d.first_name }} {{ d.last_name }} · {{ d.specialization }}
-              </option>
-            </select>
+            <div class="avail-doctor-search-wrap" v-click-outside="() => availModal.dropdownOpen = false">
+              <div class="avail-doctor-search-input-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <input
+                  class="avail-doctor-search-input"
+                  type="text"
+                  placeholder="Search doctor by name or specialization…"
+                  v-model="availModal.doctorSearch"
+                  @focus="availModal.dropdownOpen = true"
+                  @input="availModal.dropdownOpen = true; availModal.doctorId = ''; availModal.hospital = ''; availModal.selectedSlots = {}"
+                />
+                <button v-if="availModal.doctorSearch" class="avail-search-clear" @click="availModal.doctorSearch = ''; availModal.doctorId = ''; availModal.hospital = ''; availModal.selectedSlots = {}; availModal.dropdownOpen = false">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="avail-doctor-dropdown" v-if="availModal.dropdownOpen && filteredAvailDoctors.length > 0">
+                <div
+                  v-for="d in filteredAvailDoctors"
+                  :key="d.id"
+                  class="avail-doctor-option"
+                  :class="{ selected: availModal.doctorId === d.id }"
+                  @mousedown.prevent="selectAvailDoctor(d)"
+                >
+                  <div class="avail-doctor-option-avatar">{{ d.first_name[0] }}{{ d.last_name[0] }}</div>
+                  <div class="avail-doctor-option-info">
+                    <span class="avail-doctor-option-name">Dr. {{ d.first_name }} {{ d.last_name }}</span>
+                    <span class="avail-doctor-option-spec">{{ d.specialization }}</span>
+                  </div>
+                  <svg v-if="availModal.doctorId === d.id" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#3aa6a6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </div>
+              </div>
+              <div class="avail-doctor-dropdown" v-else-if="availModal.dropdownOpen && availModal.doctorSearch && filteredAvailDoctors.length === 0">
+                <div class="avail-doctor-no-result">No doctors found for "{{ availModal.doctorSearch }}"</div>
+              </div>
+              <!-- Selected doctor chip -->
+              <div class="avail-selected-doctor-chip" v-if="availModal.doctorId">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                {{ availModal.doctorSearch }}
+              </div>
+            </div>
           </div>
 
           <!-- Hospital picker — shown after doctor is selected -->
@@ -531,19 +633,29 @@
             <p v-else>Now select a hospital to set this doctor's schedule for that hospital</p>
           </div>
 
+          </template><!-- /edit view -->
+
         </div><!-- /modal-body -->
 
         <!-- footer -->
         <div class="modal-footer">
-          <button class="btn-skip" @click="availModal.show = false">Cancel</button>
-          <button
-            class="btn-save-avail"
-            :disabled="!availModal.doctorId || !availModal.hospital || availModal.saving"
-            @click="saveSchedule"
-          >
-            <svg v-if="!availModal.saving" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-            {{ availModal.saving ? 'Saving…' : 'Save Schedule' }}
-          </button>
+          <button class="btn-skip" @click="availModal.show = false">Close</button>
+          <template v-if="availModal.view === 'summary'">
+            <button class="btn-save-avail" @click="availModal.view = 'edit'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Edit Schedule
+            </button>
+          </template>
+          <template v-else>
+            <button
+              class="btn-save-avail"
+              :disabled="!availModal.doctorId || !availModal.hospital || availModal.saving"
+              @click="saveSchedule"
+            >
+              <svg v-if="!availModal.saving" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              {{ availModal.saving ? 'Saving…' : 'Save Schedule' }}
+            </button>
+          </template>
         </div>
 
       </div><!-- /modal -->
@@ -606,13 +718,16 @@ export default {
       availModal: {
         show:        false,
         doctorId:    '',
+        doctorSearch: '',
+        dropdownOpen: false,
         hospital:    '',
-        activeDay:   1,          // 1 = Monday default
-        // selectedSlots: Map<dayOfWeek(0-6), Set<"HH:MM">>
+        activeDay:   1,
         selectedSlots: {},
         loadingSlots: false,
         saving:       false,
+        view:         'edit',   // 'edit' | 'summary'
       },
+      doctorFilterSearch: '',
       hospitals: [],
 
       monthNames: ['January','February','March','April','May','June','July','August','September','October','November','December'],
@@ -711,6 +826,25 @@ export default {
         cells.push({ day: d, currentMonth: false, isToday: false, date: `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}` })
       }
       return cells
+    },
+
+    // ── Doctor search for availability modal ────────────────
+    filteredAvailDoctors() {
+      const q = (this.availModal.doctorSearch || '').toLowerCase().trim()
+      if (!q) return this.doctors
+      return this.doctors.filter(d =>
+        `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
+        (d.specialization || '').toLowerCase().includes(q)
+      )
+    },
+
+    // ── Doctor filter for appointments panel ────────────────
+    filteredSelectedDayAppts() {
+      const q = (this.doctorFilterSearch || '').toLowerCase().trim()
+      if (!q) return this.selectedDayAppts
+      return this.selectedDayAppts.filter(a =>
+        (a.doctor || '').toLowerCase().includes(q)
+      )
     },
 
     // ── Availability modal helpers ───────────────────────────
@@ -929,10 +1063,21 @@ export default {
     openAvailModal() {
       this.availModal.show         = true
       this.availModal.doctorId     = ''
+      this.availModal.doctorSearch = ''
+      this.availModal.dropdownOpen = false
       this.availModal.hospital     = ''
       this.availModal.activeDay    = 1
       this.availModal.selectedSlots = {}
       this.availModal.saving       = false
+      this.availModal.view         = 'edit'
+    },
+
+    selectAvailDoctor(d) {
+      this.availModal.doctorId     = d.id
+      this.availModal.doctorSearch = `Dr. ${d.first_name} ${d.last_name} · ${d.specialization}`
+      this.availModal.dropdownOpen = false
+      this.availModal.hospital     = ''
+      this.availModal.selectedSlots = {}
     },
 
     async loadDoctorSchedule() {
@@ -1002,7 +1147,7 @@ export default {
         })
         if (!res.ok) throw new Error()
         this.showToast('Schedule saved — patients will see updated slots instantly ✓', 'success')
-        this.availModal.show = false
+        this.availModal.view = 'summary'
       } catch {
         this.showToast('Failed to save schedule', 'error')
       } finally {
@@ -1276,6 +1421,115 @@ export default {
 .toast.success { background: #16a34a; }
 .toast.error   { background: #dc2626; }
 .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
+
+/* ── Schedule Summary View ───────────────────────────────── */
+.avail-summary-view { display: flex; flex-direction: column; gap: 16px; }
+.avail-summary-success {
+  display: flex; align-items: center; gap: 12px;
+  background: #f0fdf4; border: 1.5px solid #bbf7d0;
+  border-radius: 12px; padding: 14px 16px;
+}
+.avail-summary-success-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #16a34a; color: #fff; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.avail-summary-success-title { font-size: 14px; font-weight: 700; color: #166534; }
+.avail-summary-success-sub { font-size: 12px; color: #15803d; margin-top: 2px; }
+.avail-summary-edit-btn {
+  margin-left: auto; display: flex; align-items: center; gap: 6px;
+  background: #fff; border: 1.5px solid #bbf7d0; border-radius: 8px;
+  padding: 6px 12px; font-size: 12.5px; font-weight: 600; color: #166534;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.avail-summary-edit-btn:hover { background: #dcfce7; }
+
+.avail-summary-days { display: flex; flex-direction: column; gap: 10px; }
+.avail-summary-day-row {
+  border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 12px 14px; background: #fff;
+  transition: border-color 0.15s;
+}
+.avail-summary-day-row:not(.empty) { border-color: #a7f3d0; }
+.avail-summary-day-label {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.avail-summary-day-name { font-size: 13px; font-weight: 700; color: #1e293b; }
+.avail-summary-slot-count {
+  font-size: 11.5px; font-weight: 600; padding: 2px 8px;
+  border-radius: 20px; background: #d1fae5; color: #065f46;
+}
+.avail-summary-slot-count.zero { background: #f1f5f9; color: #94a3b8; }
+.avail-summary-slots { display: flex; flex-wrap: wrap; gap: 6px; }
+.avail-summary-slot-chip {
+  padding: 4px 10px; border-radius: 20px;
+  background: #e0f2fe; color: #0369a1;
+  font-size: 12px; font-weight: 600;
+}
+.avail-summary-no-slots {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #94a3b8; font-style: italic;
+}
+
+/* ── Doctor search in availability modal ─────────────────── */
+.avail-doctor-search-wrap { position: relative; }
+.avail-doctor-search-input-row {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  padding: 8px 12px; background: #fff; transition: border-color 0.2s;
+}
+.avail-doctor-search-input-row:focus-within { border-color: #3aa6a6; }
+.avail-doctor-search-input {
+  flex: 1; border: none; outline: none;
+  font-size: 13.5px; color: #1e293b; background: transparent;
+}
+.avail-search-clear {
+  background: none; border: none; cursor: pointer;
+  color: #94a3b8; padding: 0; display: flex; align-items: center;
+}
+.avail-search-clear:hover { color: #ef4444; }
+.avail-doctor-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 100;
+  max-height: 220px; overflow-y: auto;
+}
+.avail-doctor-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; cursor: pointer; transition: background 0.15s;
+}
+.avail-doctor-option:hover { background: #f0fafa; }
+.avail-doctor-option.selected { background: #e6f7f7; }
+.avail-doctor-option-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #3aa6a6; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.avail-doctor-option-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.avail-doctor-option-name { font-size: 13.5px; font-weight: 600; color: #1e293b; }
+.avail-doctor-option-spec { font-size: 12px; color: #64748b; }
+.avail-doctor-no-result { padding: 14px; font-size: 13px; color: #94a3b8; text-align: center; }
+.avail-selected-doctor-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 4px 10px; border-radius: 20px;
+  background: #e6f7f7; color: #0f766e; font-size: 12.5px; font-weight: 600;
+}
+
+/* ── Doctor filter in appointments panel ─────────────────── */
+.appt-doctor-filter { padding: 10px 16px 4px; border-bottom: 1px solid #f1f5f9; }
+.appt-doctor-filter-input-row {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid #e2e8f0; border-radius: 8px;
+  padding: 7px 12px; background: #f8fafc; transition: border-color 0.2s;
+}
+.appt-doctor-filter-input-row:focus-within { border-color: #3aa6a6; background: #fff; }
+.appt-doctor-filter-input {
+  flex: 1; border: none; outline: none;
+  font-size: 13px; color: #1e293b; background: transparent;
+}
+.appt-doctor-filter-count { display: block; margin-top: 5px; font-size: 12px; color: #64748b; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(20px); }
 
 @media (max-width: 1024px) { .schedule-layout { grid-template-columns: 1fr; } }
