@@ -562,7 +562,7 @@
             </div>
           </div>
 
-          <!-- Hospital picker — shown after doctor is selected -->
+          <!-- Hospital — auto-filled from doctor record, read-only -->
           <div class="avail-field-row" v-if="availModal.doctorId">
             <label class="avail-label">Hospital</label>
             <div class="avail-hospital-display" v-if="availModal.hospital">
@@ -834,7 +834,9 @@ export default {
 
     // ── Doctor search for availability modal ────────────────
     filteredAvailDoctors() {
-      const q = (this.availModal.doctorSearch || '').toLowerCase().trim()
+      const raw = (this.availModal.doctorSearch || '').toLowerCase().trim()
+      // Strip "Dr. " prefix and anything after " · " (specialization chip)
+      const q = raw.replace(/^dr\.\s*/i, '').split(' · ')[0].trim()
       if (!q) return this.doctors
       return this.doctors.filter(d =>
         `${d.first_name} ${d.last_name}`.toLowerCase().includes(q) ||
@@ -1078,7 +1080,7 @@ export default {
 
     selectAvailDoctor(d) {
       this.availModal.doctorId      = d.id
-      this.availModal.doctorSearch  = `Dr. ${d.first_name} ${d.last_name} · ${d.specialization}`
+      this.availModal.doctorSearch  = `Dr. ${d.first_name} ${d.last_name}`
       this.availModal.dropdownOpen  = false
       this.availModal.hospital      = d.hospital || ''
       this.availModal.selectedSlots = {}
