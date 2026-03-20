@@ -237,8 +237,8 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
               {{ isAdmin ? 'All Doctors' : 'My Appointments' }}
             </div>
-            <!-- ── Admin + Doctor: open the availability manager ── -->
-            <button v-if="isAdmin || doctorCan('view_schedule')" class="btn-manage-avail" @click="openAvailModal">
+            <!-- ── Admin only: open the availability manager ── -->
+            <button v-if="isAdmin" class="btn-manage-avail" @click="openAvailModal">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               Manage Availability
             </button>
@@ -517,8 +517,8 @@
           <!-- ── EDIT VIEW ── -->
           <template v-else>
 
-          <!-- Doctor picker with search (Admin only) -->
-          <div class="avail-field-row" v-if="isAdmin">
+          <!-- Doctor picker with search -->
+          <div class="avail-field-row">
             <label class="avail-label">Doctor</label>
             <div class="avail-doctor-search-wrap" v-click-outside="() => availModal.dropdownOpen = false">
               <div class="avail-doctor-search-input-row">
@@ -565,15 +565,13 @@
           <!-- Hospital picker — shown after doctor is selected -->
           <div class="avail-field-row" v-if="availModal.doctorId">
             <label class="avail-label">Hospital</label>
-            <!-- Admin: full dropdown to select hospital -->
-            <select v-if="isAdmin" class="avail-select" v-model="availModal.hospital" @change="loadDoctorSchedule">
-              <option value="">— Select a hospital —</option>
-              <option v-for="h in hospitals" :key="h.id" :value="h.name">{{ h.name }}</option>
-            </select>
-            <!-- Doctor: show their designated hospital as read-only -->
-            <div v-else class="avail-hospital-display">
+            <div class="avail-hospital-display" v-if="availModal.hospital">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-              <span>{{ availModal.hospital || 'No hospital assigned' }}</span>
+              <span>{{ availModal.hospital }}</span>
+            </div>
+            <div class="avail-hospital-none" v-else>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 3a9 9 0 100 18A9 9 0 0012 3z"/></svg>
+              No hospital assigned to this doctor
             </div>
           </div>
 
@@ -1067,46 +1065,24 @@ export default {
     // ── Availability modal methods ───────────────────────────
 
     openAvailModal() {
-      this.availModal.show          = true
-      this.availModal.activeDay     = 1
+      this.availModal.show         = true
+      this.availModal.doctorId     = ''
+      this.availModal.doctorSearch = ''
+      this.availModal.dropdownOpen = false
+      this.availModal.hospital     = ''
+      this.availModal.activeDay    = 1
       this.availModal.selectedSlots = {}
-      this.availModal.saving        = false
-      this.availModal.view          = 'edit'
-      this.availModal.dropdownOpen  = false
-
-      if (!this.isAdmin) {
-        // Doctor role: auto-fill their own record
-        const user = JSON.parse(localStorage.getItem('user')) || {}
-        // Find the doctor record matching the logged-in user
-        const match = this.doctors.find(d => {
-          const full = `Dr. ${d.first_name} ${d.last_name}`.toLowerCase()
-          return full === (user.name || '').toLowerCase() ||
-            `${d.first_name} ${d.last_name}`.toLowerCase() === (user.name || '').toLowerCase().replace(/^dr\.\s*/i, '')
-        })
-        if (match) {
-          this.availModal.doctorId     = match.id
-          this.availModal.doctorSearch = `Dr. ${match.first_name} ${match.last_name} · ${match.specialization}`
-          this.availModal.hospital     = match.hospital || ''
-          if (match.hospital) this.loadDoctorSchedule()
-        } else {
-          this.availModal.doctorId     = ''
-          this.availModal.doctorSearch = user.name || ''
-          this.availModal.hospital     = ''
-        }
-      } else {
-        // Admin: start fresh
-        this.availModal.doctorId     = ''
-        this.availModal.doctorSearch = ''
-        this.availModal.hospital     = ''
-      }
+      this.availModal.saving       = false
+      this.availModal.view         = 'edit'
     },
 
     selectAvailDoctor(d) {
-      this.availModal.doctorId     = d.id
-      this.availModal.doctorSearch = `Dr. ${d.first_name} ${d.last_name} · ${d.specialization}`
-      this.availModal.dropdownOpen = false
-      this.availModal.hospital     = ''
+      this.availModal.doctorId      = d.id
+      this.availModal.doctorSearch  = `Dr. ${d.first_name} ${d.last_name} · ${d.specialization}`
+      this.availModal.dropdownOpen  = false
+      this.availModal.hospital      = d.hospital || ''
       this.availModal.selectedSlots = {}
+      if (d.hospital) this.loadDoctorSchedule()
     },
 
     async loadDoctorSchedule() {
@@ -1590,10 +1566,15 @@ export default {
 
 .avail-hospital-display {
   display: flex; align-items: center; gap: 8px;
-  padding: 9px 14px; border: 1.5px solid #3aa6a6; border-radius: 8px;
+  padding: 10px 14px; border: 1.5px solid #3aa6a6; border-radius: 8px;
   background: #f0fafa; color: #0f766e; font-size: 13.5px; font-weight: 600;
 }
 .avail-hospital-display svg { flex-shrink: 0; color: #3aa6a6; }
+.avail-hospital-none {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border: 1.5px dashed #e2e8f0; border-radius: 8px;
+  color: #94a3b8; font-size: 13px; font-style: italic;
+}
 
 .avail-loading    { display: flex; align-items: center; gap: 10px; color: #94a3b8; font-size: 13px; padding: 12px 0; }
 
